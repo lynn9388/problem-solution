@@ -1,2 +1,2 @@
-# problem-solving
+# problem-solution
 Solutions for programming puzzles.
