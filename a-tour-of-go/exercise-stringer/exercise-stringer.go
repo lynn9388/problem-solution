@@ -1,4 +1,4 @@
-//https://tour.golang.org/methods/18
+// https://tour.golang.org/methods/18
 package main
 
 import "fmt"

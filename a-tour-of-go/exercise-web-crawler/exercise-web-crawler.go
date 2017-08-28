@@ -1,4 +1,4 @@
-//https://tour.golang.org/concurrency/10
+// https://tour.golang.org/concurrency/10
 package main
 
 import (

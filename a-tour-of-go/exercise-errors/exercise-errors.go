@@ -1,4 +1,4 @@
-//https://tour.golang.org/methods/20
+// https://tour.golang.org/methods/20
 package main
 
 import (

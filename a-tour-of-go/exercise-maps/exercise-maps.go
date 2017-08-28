@@ -1,4 +1,4 @@
-//https://tour.golang.org/moretypes/23
+// https://tour.golang.org/moretypes/23
 package main
 
 import (

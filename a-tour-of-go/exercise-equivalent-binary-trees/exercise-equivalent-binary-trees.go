@@ -1,4 +1,4 @@
-//https://tour.golang.org/concurrency/8
+// https://tour.golang.org/concurrency/8
 package main
 
 import (
