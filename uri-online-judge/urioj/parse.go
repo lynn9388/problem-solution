@@ -1,24 +1,26 @@
 package urioj
 
 import (
-	"strings"
+	"github.com/PuerkitoBio/goquery"
+	"golang.org/x/net/html"
 	"regexp"
+	"strings"
 )
 
 func (p *Problem) GetName() string {
-	return p.doc.Find("div.header > h1").Text()
+	return strings.TrimSpace(p.doc.Find("div.header > h1").Text())
 }
 
-func (p *Problem) GetDescription() string {
-	return removeRedundantSpace(strings.TrimSpace(p.doc.Find("div.description").Text()))
+func (p *Problem) GetDescription() []string {
+	return extractContent(p.doc.Find("div.description"))
 }
 
-func (p *Problem) GetInput() string {
-	return removeRedundantSpace(strings.TrimSpace(p.doc.Find("div.input").Text()))
+func (p *Problem) GetInput() []string {
+	return extractContent(p.doc.Find("div.input"))
 }
 
-func (p *Problem) GetOutput() string {
-	return removeRedundantSpace(strings.TrimSpace(p.doc.Find("div.output").Text()))
+func (p *Problem) GetOutput() []string {
+	return extractContent(p.doc.Find("div.output"))
 }
 
 func (p *Problem) GetSamples() map[string]string {
@@ -33,15 +35,82 @@ func (p *Problem) GetSamples() map[string]string {
 	return samples
 }
 
-func removeRedundantSpace(s string) string {
-	reg := regexp.MustCompile(`[\s\p{Zs}]{2,}`)
+func removeRedundantChar(s string) string {
+	reg := regexp.MustCompile(`\r?\n?\t`)
+	s = reg.ReplaceAllString(s, "")
+
+	reg = regexp.MustCompile(`[\s\p{Zs}]{2,}`)
 	return reg.ReplaceAllString(s, " ")
+}
+
+func text(n *html.Node) []string {
+	var text []string
+
+	var str string
+	var f func(*html.Node)
+	f = func(n *html.Node) {
+		switch n.Data {
+		case "br":
+			if str != "\n" {
+				text = append(text, strings.TrimSpace(str))
+				str = "\n"
+			}
+		case "strong":
+			str += strings.TrimSpace(n.FirstChild.Data)
+		case "sup":
+			if len(str) > 0 && str[len(str)-1:] == " " {
+				str = str[:len(str)-1]
+			}
+			str += "^" + strings.TrimSpace(n.FirstChild.Data)
+		default:
+			if n.Type == html.TextNode {
+				data := removeRedundantChar(n.Data)
+				if len(strings.TrimSpace(data)) > 0 {
+					str += data
+				}
+			} else if n.FirstChild != nil {
+				for c := n.FirstChild; c != nil; c = c.NextSibling {
+					f(c)
+				}
+			}
+		}
+	}
+
+	f(n)
+	return append(text, strings.TrimSpace(str))
+}
+
+func extractContent(s *goquery.Selection) []string {
+	content := make([]string, 0, 10)
+
+	var f func(*html.Node)
+	f = func(n *html.Node) {
+		switch n.Data {
+		case "p":
+			content = append(content, text(n)...)
+		case "pre":
+			for _, t := range text(n) {
+				content = append(content, "  "+t)
+			}
+		default:
+			if n.FirstChild != nil {
+				for c := n.FirstChild; c != nil; c = c.NextSibling {
+					f(c)
+				}
+			}
+		}
+	}
+	for _, n := range s.Nodes {
+		f(n)
+	}
+
+	return content
 }
 
 func format(s string) string {
 	lines := strings.Split(strings.TrimSpace(s), "\n")
 	for i, line := range lines {
-		lines[i] = removeRedundantSpace(strings.TrimSpace(line))
+		lines[i] = removeRedundantChar(strings.TrimSpace(line))
 	}
 	return strings.Join(lines, "\n")
 }
