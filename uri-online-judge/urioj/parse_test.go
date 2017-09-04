@@ -11,7 +11,7 @@ type problem struct {
 	Description []string
 	Input       []string
 	Output      []string
-	Samples     map[string]string
+	Samples     []Sample
 }
 
 var tests = make([]problem, 2)
@@ -30,10 +30,10 @@ func init() {
 		[]string{
 			"Print the variable X according to the following example, with a blank space before and after the equal signal. 'X' is uppercase and you have to print a blank space before and after the '=' signal.",
 		},
-		map[string]string{
-			"10\n9":  "X = 19",
-			"-10\n4": "X = -6",
-			"15\n-7": "X = 8",
+		[]Sample{
+			{[]string{"10\n9"}, []string{"X = 19"}},
+			{[]string{"-10\n4"}, []string{"X = -6"}},
+			{[]string{"15\n-7"}, []string{"X = 8"}},
 		},
 	}
 	p, _ = NewProblem(1023)
@@ -49,8 +49,8 @@ func init() {
 		[]string{
 			"For each case of test you must present the message “Cidade# n:”, where n is the number of the city in the sequence (1, 2, 3, ...), and then you must list in ascending order of consumption, the people's amount followed by a hyphen and the consumption of these people, rounding the value down. In the third line of output you should present the consumption per person in that town, with two decimal places without rounding, considering the total real consumption. Print a blank line between two consecutives test's cases. There is no blank line at the end of output.",
 		},
-		map[string]string{
-			"3\n3 22\n2 11\n3 39\n5\n1 25\n2 20\n3 31\n2 40\n6 70\n0": "Cidade# 1:\n2-5 3-7 3-13\nConsumo medio: 9.00 m3.\n\nCidade# 2:\n5-10 6-11 2-20 1-25\nConsumo medio: 13.28 m3.",
+		[]Sample{
+			{[]string{"3", "3 22", "2 11", "3 39", "5", "1 25", "2 20", "3 31", "2 40", "6 70", "0"}, []string{"Cidade# 1:", "2-5 3-7 3-13", "Consumo medio: 9.00 m3.", "", "Cidade# 2:", "5-10 6-11 2-20 1-25", "Consumo medio: 13.28 m3."}},
 		},
 	}
 	p, _ = NewProblem(1239)
@@ -75,8 +75,8 @@ func init() {
 		[]string{
 			"Translate each input text into HTML as demonstrated by the examples above (and below). To render a span of text in italics in HTML, you must start with the <i> tag and end with the </i> tag. For boldface text, start with <b> and end with </b>. Print one translated text per line at standard output.",
 		},
-		map[string]string{
-			"You _should_ see the new walrus at the zoo!\nMove it from *Accounts Payable* to *Receiving*.\nI saw _Chelydra serpentina_ in *Centennial Park*.\n_ _ __ _ yabba dabba _ * dooooo * ****\n_now_I_know_*my*_ABC_next_time_*sing*it_with_me":"You <i>should</i> see the new walrus at the zoo!\nMove it from <b>Accounts Payable</b> to <b>Receiving</b>.\nI saw <i>Chelydra serpentina</i> in <b>Centennial Park</b>.\n<i> </i> <i></i> <i> yabba dabba </i> <b> dooooo </b> <b></b><b></b>\n<i>now</i>I<i>know</i><b>my</b><i>ABC</i>next<i>time</i><b>sing</b>it<i>with</i>me",
+		[]Sample{
+			{[]string{"You _should_ see the new walrus at the zoo!", "Move it from *Accounts Payable* to *Receiving*.", "I saw _Chelydra serpentina_ in *Centennial Park*.", "_ _ __ _ yabba dabba _ * dooooo * ****", "_now_I_know_*my*_ABC_next_time_*sing*it_with_me"}, []string{"You <i>should</i> see the new walrus at the zoo!", "Move it from <b>Accounts Payable</b> to <b>Receiving</b>.", "I saw <i>Chelydra serpentina</i> in <b>Centennial Park</b>.", "<i> </i> <i></i> <i> yabba dabba </i> <b> dooooo </b> <b></b><b></b>", "<i>now</i>I<i>know</i><b>my</b><i>ABC</i>next<i>time</i><b>sing</b>it<i>with</i>me"}},
 		},
 	}
 }
@@ -84,6 +84,18 @@ func init() {
 func getField(p *problem, field string) reflect.Value {
 	v := reflect.ValueOf(p)
 	return reflect.Indirect(v).FieldByName(field)
+}
+
+func checkStringSlice(expect []string, get []string) bool {
+	if len(expect) != len(get) {
+		return false
+	}
+	for i, s := range expect {
+		if s != get[i] {
+			return false
+		}
+	}
+	return true
 }
 
 func check(expect interface{}, get interface{}, t *testing.T) {
@@ -97,11 +109,17 @@ func check(expect interface{}, get interface{}, t *testing.T) {
 	match := true
 	switch expect.(type) {
 	case []string:
-		e := expect.([]string)
-		for i, s := range e {
-			g := get.([]string)
-			if s != g[i] {
-				match = false
+		match = checkStringSlice(expect.([]string), get.([]string))
+	case []Sample:
+		es := expect.([]Sample)
+		gs := expect.([]Sample)
+		if len(es) != len(gs) {
+			match = false
+			break
+		}
+		for i, s := range es {
+			match = checkStringSlice(s.Input, gs[i].Input) && checkStringSlice(s.Output, gs[i].Output)
+			if !match {
 				break
 			}
 		}
@@ -149,9 +167,8 @@ func TestProblem_GetOutput(t *testing.T) {
 
 func TestProblem_GetSamples(t *testing.T) {
 	for _, p := range tests {
-		samples := p.p.Samples()
-		for k, v := range samples {
-			check(p.Samples[k], v, t)
-		}
+		expect := p.Samples
+		get := p.p.Samples()
+		check(expect, get, t)
 	}
 }

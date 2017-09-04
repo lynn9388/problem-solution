@@ -7,6 +7,11 @@ import (
 	"strings"
 )
 
+type Sample struct {
+	Input []string
+	Output []string
+}
+
 func (p *Problem) Name() string {
 	return strings.TrimSpace(p.doc.Find("div.header > h1").Text())
 }
@@ -23,14 +28,14 @@ func (p *Problem) Output() []string {
 	return extractContent(p.doc.Find("div.output"))
 }
 
-func (p *Problem) Samples() map[string]string {
-	samples := make(map[string]string)
+func (p *Problem) Samples() []Sample {
+	samples := make([]Sample, 0, 5)
 	table := p.doc.Find("tbody")
 	for i := range table.Nodes {
 		sample := table.Eq(i).Find("td")
-		input := format(sample.First().Text())
-		output := format(sample.Last().Text())
-		samples[input] = output
+		input := formatSample(sample.First().Text())
+		output := formatSample(sample.Last().Text())
+		samples = append(samples, Sample{input, output})
 	}
 	return samples
 }
@@ -105,10 +110,11 @@ func extractContent(s *goquery.Selection) []string {
 	return content
 }
 
-func format(s string) string {
+func formatSample(s string) []string {
+	e := make([]string, 0, 5)
 	lines := strings.Split(strings.TrimSpace(s), "\n")
-	for i, line := range lines {
-		lines[i] = removeRedundantChar(strings.TrimSpace(line))
+	for _, line := range lines {
+		e = append(e, removeRedundantChar(strings.TrimSpace(line)))
 	}
-	return strings.Join(lines, "\n")
+	return e
 }
