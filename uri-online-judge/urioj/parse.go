@@ -1,14 +1,15 @@
 package urioj
 
 import (
-	"github.com/PuerkitoBio/goquery"
-	"golang.org/x/net/html"
 	"regexp"
 	"strings"
+
+	"github.com/PuerkitoBio/goquery"
+	"golang.org/x/net/html"
 )
 
 type Sample struct {
-	Input []string
+	Input  []string
 	Output []string
 }
 

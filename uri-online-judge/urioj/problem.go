@@ -1,8 +1,9 @@
 package urioj
 
 import (
-	"github.com/PuerkitoBio/goquery"
 	"strconv"
+
+	"github.com/PuerkitoBio/goquery"
 )
 
 type Problem struct {

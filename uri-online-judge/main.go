@@ -3,12 +3,13 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/lynn9388/problem-solution/uri-online-judge/urioj"
-	"github.com/olekukonko/tablewriter"
 	"io/ioutil"
 	"os"
 	"strings"
 	"unicode/utf8"
+
+	"github.com/lynn9388/problem-solution/uri-online-judge/urioj"
+	"github.com/olekukonko/tablewriter"
 )
 
 const lineWidth = 70
