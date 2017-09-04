@@ -36,12 +36,24 @@ func comment(p *urioj.Problem) string {
 	output := p.Output()
 	samples := p.Samples()
 
-	return formatString(formatName(name)).String() + "\n" +
-		formatStringSlice(description).String() + "\n// Input\n//\n" +
-		formatStringSlice(input).String() + "\n// Output\n//\n" +
+	command := new(bytes.Buffer)
+	command.WriteByte('/')
+	for i := 0; i < lineWidth-1; i++ {
+		command.WriteByte('*')
+	}
+	command.WriteString("\n" +
+		centerString(name) + "\n" +
+		centerString(p.Url) + "\n\n" +
+		formatStringSlice(description).String() + "\nInput\n*****\n" +
+		formatStringSlice(input).String() + "\nOutput\n******\n" +
 		formatStringSlice(output).String() + "\n" +
-		formatSample(createSampleTable(samples)).String() + "\n" +
-		formatString(p.Url).String() + "\n"
+		formatSample(samples).String())
+	for i := 0; i < lineWidth-1; i++ {
+		command.WriteByte('*')
+	}
+	command.WriteString("/\n\n")
+
+	return command.String()
 }
 
 func createFile(p *urioj.Problem) {
@@ -65,8 +77,8 @@ func createFile(p *urioj.Problem) {
 	}
 }
 
-func formatName(s string) string {
-	spaceNum := (lineWidth - 3 - utf8.RuneCountInString(s)) / 2
+func centerString(s string) string {
+	spaceNum := (lineWidth - utf8.RuneCountInString(s)) / 2
 	return strings.Repeat(" ", spaceNum) + s
 }
 
@@ -79,14 +91,14 @@ func formatString(s string) *bytes.Buffer {
 	for i := 0; i < len(words); i++ {
 		word = words[i]
 		length = utf8.RuneCountInString(word)
-		if width == 0 {
-			buf.WriteString("//")
-			width += 2
-		}
 		if width+length < lineWidth ||
 			(width < lineWidth-5 && width+length < lineWidth+5) {
-			buf.WriteString(" " + words[i])
-			width += 1 + length
+			if width != 0 {
+				buf.WriteByte(' ')
+				width++
+			}
+			buf.WriteString(word)
+			width += length
 		} else {
 			buf.WriteString("\n")
 			width = 0
@@ -102,13 +114,13 @@ func formatStringSlice(s []string) *bytes.Buffer {
 	for i, line := range s {
 		buf.Write(formatString(line).Bytes())
 		if i != len(s)-1 {
-			buf.WriteString("//\n")
+			buf.WriteString("\n")
 		}
 	}
 	return buf
 }
 
-func createSampleTable(sample []urioj.Sample) *bytes.Buffer {
+func formatSample(sample []urioj.Sample) *bytes.Buffer {
 	buf := new(bytes.Buffer)
 
 	table := tablewriter.NewWriter(buf)
@@ -137,16 +149,5 @@ func createSampleTable(sample []urioj.Sample) *bytes.Buffer {
 	}
 
 	table.Render()
-	return buf
-}
-
-func formatSample(b *bytes.Buffer) *bytes.Buffer {
-	buf := new(bytes.Buffer)
-
-	for b.Len() > 0 {
-		line, _ := b.ReadString('\n')
-		buf.WriteString("// " + line)
-	}
-
 	return buf
 }
