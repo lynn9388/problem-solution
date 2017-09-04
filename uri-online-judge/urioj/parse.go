@@ -55,8 +55,6 @@ func text(n *html.Node) []string {
 				text = append(text, strings.TrimSpace(str))
 				str = "\n"
 			}
-		case "strong":
-			str += strings.TrimSpace(n.FirstChild.Data)
 		case "sup":
 			if len(str) > 0 && str[len(str)-1:] == " " {
 				str = str[:len(str)-1]
