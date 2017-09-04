@@ -7,23 +7,23 @@ import (
 	"strings"
 )
 
-func (p *Problem) GetName() string {
+func (p *Problem) Name() string {
 	return strings.TrimSpace(p.doc.Find("div.header > h1").Text())
 }
 
-func (p *Problem) GetDescription() []string {
+func (p *Problem) Description() []string {
 	return extractContent(p.doc.Find("div.description"))
 }
 
-func (p *Problem) GetInput() []string {
+func (p *Problem) Input() []string {
 	return extractContent(p.doc.Find("div.input"))
 }
 
-func (p *Problem) GetOutput() []string {
+func (p *Problem) Output() []string {
 	return extractContent(p.doc.Find("div.output"))
 }
 
-func (p *Problem) GetSamples() map[string]string {
+func (p *Problem) Samples() map[string]string {
 	samples := make(map[string]string)
 	table := p.doc.Find("tbody")
 	for i := range table.Nodes {

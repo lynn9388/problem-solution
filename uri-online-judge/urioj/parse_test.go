@@ -132,24 +132,24 @@ func testStringSlice(f func(*Problem) []string, field string, t *testing.T) {
 }
 
 func TestProblem_GetName(t *testing.T) {
-	testString((*Problem).GetName, "Name", t)
+	testString((*Problem).Name, "Name", t)
 }
 
 func TestProblem_GetDescription(t *testing.T) {
-	testStringSlice((*Problem).GetDescription, "Description", t)
+	testStringSlice((*Problem).Description, "Description", t)
 }
 
 func TestProblem_GetInput(t *testing.T) {
-	testStringSlice((*Problem).GetInput, "Input", t)
+	testStringSlice((*Problem).Input, "Input", t)
 }
 
 func TestProblem_GetOutput(t *testing.T) {
-	testStringSlice((*Problem).GetOutput, "Output", t)
+	testStringSlice((*Problem).Output, "Output", t)
 }
 
 func TestProblem_GetSamples(t *testing.T) {
 	for _, p := range tests {
-		samples := p.p.GetSamples()
+		samples := p.p.Samples()
 		for k, v := range samples {
 			check(p.Samples[k], v, t)
 		}
