@@ -42,10 +42,10 @@ func (p *Problem) Samples() []Sample {
 }
 
 func removeRedundantChar(s string) string {
-	reg := regexp.MustCompile(`\r?\n?\t`)
-	s = reg.ReplaceAllString(s, "")
+	replacer := strings.NewReplacer("\r", "", "\n", "", "\t", "", "\u00A0", " ")
+	s = replacer.Replace(s)
 
-	reg = regexp.MustCompile(`[\s\p{Zs}]{2,}`)
+	reg := regexp.MustCompile(`[\s\p{Zs}]{2,}`)
 	return reg.ReplaceAllString(s, " ")
 }
 
