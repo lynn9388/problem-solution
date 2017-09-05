@@ -91,7 +91,7 @@ func formatString(s string) *bytes.Buffer {
 	for i := 0; i < len(words); i++ {
 		word = words[i]
 		length = utf8.RuneCountInString(word)
-		if width+length < lineWidth ||
+		if width+length < lineWidth || (width < lineWidth/2) ||
 			(width < lineWidth-5 && width+length < lineWidth+5) {
 			if width != 0 {
 				buf.WriteByte(' ')
@@ -100,9 +100,8 @@ func formatString(s string) *bytes.Buffer {
 			buf.WriteString(word)
 			width += length
 		} else {
-			buf.WriteString("\n")
-			width = 0
-			i--
+			buf.WriteString("\n" + word)
+			width = length
 		}
 	}
 	buf.WriteString("\n")
