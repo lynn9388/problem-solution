@@ -58,7 +58,9 @@ func text(n *html.Node) []string {
 		switch n.Data {
 		case "br":
 			if str != "\n" {
-				text = append(text, strings.TrimSpace(str))
+				if s := strings.TrimSpace(str); len(s) > 0 {
+					text = append(text, s)
+				}
 				str = "\n"
 			}
 		case "sup":
@@ -81,7 +83,10 @@ func text(n *html.Node) []string {
 	}
 
 	f(n)
-	return append(text, strings.TrimSpace(str))
+	if s := strings.TrimSpace(str); len(s) > 0 {
+		text = append(text, s)
+	}
+	return text
 }
 
 func extractContent(s *goquery.Selection) []string {
