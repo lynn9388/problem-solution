@@ -68,6 +68,13 @@ func text(n *html.Node) []string {
 				str = str[:len(str)-1]
 			}
 			str += "^" + strings.TrimSpace(n.FirstChild.Data)
+		case "img":
+			for _, attr := range n.Attr {
+				if attr.Key == "src" {
+					str += "<img src=\"" + attr.Val + "\">"
+					break
+				}
+			}
 		default:
 			if n.Type == html.TextNode {
 				data := removeRedundantChar(n.Data)
