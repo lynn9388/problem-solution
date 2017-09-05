@@ -79,6 +79,9 @@ func text(n *html.Node) []string {
 			if n.Type == html.TextNode {
 				data := removeRedundantChar(n.Data)
 				if len(strings.TrimSpace(data)) > 0 {
+					if n.Parent.Data == "strong" {
+						data = strings.TrimSpace(data)
+					}
 					str += data
 				}
 			} else if n.FirstChild != nil {
