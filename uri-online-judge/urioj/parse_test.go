@@ -14,11 +14,11 @@ type problem struct {
 	Samples     []Sample
 }
 
-var tests = make([]problem, 2)
+var tests = make([]problem, 0)
 
 func init() {
 	p, _ := NewProblem(1001)
-	tests[0] = problem{
+	tests = append(tests, problem{
 		p,
 		"Extremely Basic",
 		[]string{
@@ -35,9 +35,31 @@ func init() {
 			{[]string{"-10\n4"}, []string{"X = -6"}},
 			{[]string{"15\n-7"}, []string{"X = 8"}},
 		},
-	}
+	})
+
+	p, _ = NewProblem(1015)
+	tests = append(tests, problem{
+		p,
+		"Distance Between Two Points",
+		[]string{
+			"Read the four values corresponding to the x and y axes of two points in the plane, p1 (x1, y1) and p2 (x2, y2) and calculate the distance between them, showing four decimal places after the comma, according to the formula:",
+			"Distance = <img src=\"https://urionlinejudge.r.worldssl.net/gallery/images/problems/UOJ_1015.png\">",
+		},
+		[]string{
+			"The input file contains two lines of data. The first one contains two double values: x1 y1 and the second one also contains two double values with one digit after the decimal point: x2 y2.",
+		},
+		[]string{
+			"Calculate and print the distance value using the provided formula, with 4 digits after the decimal point.",
+		},
+		[]Sample{
+			{[]string{"1.0 7.0\n5.0 9.0"}, []string{"4.4721"}},
+			{[]string{"-2.5 0.4\n12.1 7.3"}, []string{"16.1484"}},
+			{[]string{"2.5 -0.4\n-12.2 7.0"}, []string{"16.4575"}},
+		},
+	})
+
 	p, _ = NewProblem(1023)
-	tests[1] = problem{
+	tests = append(tests, problem{
 		p,
 		"Drought",
 		[]string{
@@ -52,9 +74,10 @@ func init() {
 		[]Sample{
 			{[]string{"3", "3 22", "2 11", "3 39", "5", "1 25", "2 20", "3 31", "2 40", "6 70", "0"}, []string{"Cidade# 1:", "2-5 3-7 3-13", "Consumo medio: 9.00 m3.", "", "Cidade# 2:", "5-10 6-11 2-20 1-25", "Consumo medio: 13.28 m3."}},
 		},
-	}
+	})
+
 	p, _ = NewProblem(1239)
-	tests[1] = problem{
+	tests = append(tests, problem{
 		p,
 		"Bloggo Shortcuts",
 		[]string{
@@ -78,7 +101,7 @@ func init() {
 		[]Sample{
 			{[]string{"You _should_ see the new walrus at the zoo!", "Move it from *Accounts Payable* to *Receiving*.", "I saw _Chelydra serpentina_ in *Centennial Park*.", "_ _ __ _ yabba dabba _ * dooooo * ****", "_now_I_know_*my*_ABC_next_time_*sing*it_with_me"}, []string{"You <i>should</i> see the new walrus at the zoo!", "Move it from <b>Accounts Payable</b> to <b>Receiving</b>.", "I saw <i>Chelydra serpentina</i> in <b>Centennial Park</b>.", "<i> </i> <i></i> <i> yabba dabba </i> <b> dooooo </b> <b></b><b></b>", "<i>now</i>I<i>know</i><b>my</b><i>ABC</i>next<i>time</i><b>sing</b>it<i>with</i>me"}},
 		},
-	}
+	})
 }
 
 func getField(p *problem, field string) reflect.Value {
@@ -98,11 +121,11 @@ func checkStringSlice(expect []string, get []string) bool {
 	return true
 }
 
-func check(expect interface{}, get interface{}, t *testing.T) {
+func check(id string, expect interface{}, get interface{}, t *testing.T) {
 	expectType := reflect.TypeOf(expect)
 	getType := reflect.TypeOf(get)
 	if expectType != getType {
-		t.Logf("The check value type doesn't match:\nExpect:%v\nGet   :%v", expectType, getType)
+		t.Logf("The check value type doesn't match (problem %s):\nExpect:%v\nGet   :%v", id, expectType, getType)
 		t.Fail()
 	}
 
@@ -128,7 +151,7 @@ func check(expect interface{}, get interface{}, t *testing.T) {
 	}
 
 	if !match {
-		t.Logf("Check value doesn't match:\nExpect:%v\nGet   :%v", expect, get)
+		t.Logf("Check value doesn't match (problem %s):\nExpect:%v\nGet   :%v", id, expect, get)
 		t.Fail()
 	}
 }
@@ -137,7 +160,7 @@ func testString(f func(*Problem) string, field string, t *testing.T) {
 	for _, p := range tests {
 		expect := getField(&p, field).String()
 		get := f(p.p)
-		check(expect, get, t)
+		check(p.p.Id, expect, get, t)
 	}
 }
 
@@ -145,7 +168,7 @@ func testStringSlice(f func(*Problem) []string, field string, t *testing.T) {
 	for _, p := range tests {
 		expect := getField(&p, field).Interface().([]string)
 		get := f(p.p)
-		check(expect, get, t)
+		check(p.p.Id, expect, get, t)
 	}
 }
 
@@ -169,6 +192,6 @@ func TestProblem_GetSamples(t *testing.T) {
 	for _, p := range tests {
 		expect := p.Samples
 		get := p.p.Samples()
-		check(expect, get, t)
+		check(p.p.Id, expect, get, t)
 	}
 }
