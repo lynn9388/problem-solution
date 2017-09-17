@@ -4,6 +4,8 @@ import (
 	"regexp"
 	"strings"
 
+	"unicode"
+
 	"github.com/PuerkitoBio/goquery"
 	"golang.org/x/net/html"
 )
@@ -41,12 +43,16 @@ func (p *Problem) Samples() []Sample {
 	return samples
 }
 
+func removeRedundantSpace(s string) string {
+	reg := regexp.MustCompile(`[\s\p{Zs}]{2,}`)
+	s = reg.ReplaceAllString(s, " ")
+	replacer := strings.NewReplacer(" +", " ")
+	return replacer.Replace(s)
+}
+
 func removeRedundantChar(s string) string {
 	replacer := strings.NewReplacer("\r", "", "\n", "", "\t", "", "\u00A0", " ")
-	s = replacer.Replace(s)
-
-	reg := regexp.MustCompile(`[\s\p{Zs}]{2,}`)
-	return reg.ReplaceAllString(s, " ")
+	return replacer.Replace(s)
 }
 
 func text(n *html.Node) []string {
@@ -59,7 +65,7 @@ func text(n *html.Node) []string {
 		case "br":
 			if str != "\n" {
 				if s := strings.TrimSpace(str); len(s) > 0 {
-					text = append(text, s)
+					text = append(text, removeRedundantSpace(s))
 				}
 				str = "\n"
 			}
@@ -80,7 +86,8 @@ func text(n *html.Node) []string {
 				data := removeRedundantChar(n.Data)
 				if len(strings.TrimSpace(data)) > 0 {
 					if n.Parent.Data == "strong" {
-						data = strings.TrimSpace(data)
+						data = strings.TrimLeftFunc(data, unicode.IsSpace)
+						data = removeRedundantSpace(data)
 					}
 					str += data
 				}
@@ -94,7 +101,7 @@ func text(n *html.Node) []string {
 
 	f(n)
 	if s := strings.TrimSpace(str); len(s) > 0 {
-		text = append(text, s)
+		text = append(text, removeRedundantSpace(s))
 	}
 	return text
 }
@@ -130,7 +137,7 @@ func formatSample(s string) []string {
 	e := make([]string, 0, 5)
 	lines := strings.Split(strings.TrimSpace(s), "\n")
 	for _, line := range lines {
-		e = append(e, removeRedundantChar(strings.TrimSpace(line)))
+		e = append(e, removeRedundantSpace(strings.TrimSpace(line)))
 	}
 	return e
 }
