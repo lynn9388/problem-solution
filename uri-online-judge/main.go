@@ -17,10 +17,11 @@ const lineWidth = 70
 func main() {
 	var id int
 	fmt.Print("Please input the problem id:")
-	fmt.Scanf("%d", &id)
-
-	p, _ := urioj.NewProblem(id)
-	createFile(p)
+	for {
+		fmt.Scanf("%d", &id)
+		p, _ := urioj.NewProblem(id)
+		createFile(p)
+	}
 }
 
 func check(err error) {
@@ -72,6 +73,7 @@ func createFile(p *urioj.Problem) {
 		err = ioutil.WriteFile(outputDir+"/main.go",
 			append([]byte(comment(p)), code...), 0664)
 		check(err)
+		fmt.Println("File has been created:", outputFile)
 	} else {
 		fmt.Println("File already exists:", outputFile)
 	}
