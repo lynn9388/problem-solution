@@ -115,8 +115,14 @@ func extractContent(s *goquery.Selection) []string {
 	f = func(n *html.Node) {
 		switch n.Data {
 		case "p":
+			if len(content) != 0 {
+				content = append(content, "")
+			}
 			content = append(content, text(n)...)
 		case "pre":
+			if len(content) != 0 {
+				content = append(content, "")
+			}
 			for _, t := range text(n) {
 				content = append(content, "  "+t)
 			}

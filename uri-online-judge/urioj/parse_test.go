@@ -43,6 +43,7 @@ func init() {
 		"Distance Between Two Points",
 		[]string{
 			"Read the four values corresponding to the x and y axes of two points in the plane, p1 (x1, y1) and p2 (x2, y2) and calculate the distance between them, showing four decimal places after the comma, according to the formula:",
+			"",
 			"Distance = <img src=\"https://urionlinejudge.r.worldssl.net/gallery/images/problems/UOJ_1015.png\">",
 		},
 		[]string{
@@ -102,13 +103,21 @@ func init() {
 		"Bloggo Shortcuts",
 		[]string{
 			"You are helping to develop a weblog-management system called bloggo. Although bloggo pushes all content to the front end of a website in HTML, not all content authors enjoy using HTML tags in their text. To make their lives easier, bloggo offers a simple syntax called shortcuts to achieve some HTML textual effects. Your job is to take a document written with shortcuts and translate it into proper HTML.",
+			"",
 			"One shortcut is used to make italicized text. HTML does this with the <i> and </i> tags, but in bloggo, an author can simply enclose a piece of text using two instances of the underscore character, '_'. Thus, where a content author writes",
+			"",
 			"  You _should_ see the baby elephant at the zoo!",
+			"",
 			"bloggo will publish the following instead.",
+			"",
 			"  You <i>should</i> see the baby elephant at the zoo!",
+			"",
 			"Another shortcut serves to render text in boldface, which HTML accomplishes with <b> and </b> tags. Bloggo lets content authors do the same with paired instances of the asterisk character, '*'. When a content author writes the text",
+			"",
 			"  Move it from *Receiving* to *Accounts Payable*.",
+			"",
 			"it will end up on the website as",
+			"",
 			"  Move it from <b>Receiving</b> to <b>Accounts Payable</b>.",
 		},
 		[]string{

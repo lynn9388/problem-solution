@@ -111,17 +111,14 @@ func formatString(s string) *bytes.Buffer {
 			width = length
 		}
 	}
-	buf.WriteString("\n")
 	return buf
 }
 
 func formatStringSlice(s []string) *bytes.Buffer {
 	buf := new(bytes.Buffer)
-	for i, line := range s {
+	for _, line := range s {
 		buf.Write(formatString(line).Bytes())
-		if i != len(s)-1 {
-			buf.WriteString("\n")
-		}
+		buf.WriteByte('\n')
 	}
 	return buf
 }
