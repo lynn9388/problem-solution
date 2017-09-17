@@ -90,6 +90,11 @@ func formatString(s string) *bytes.Buffer {
 	width := 0
 	var word string
 	var length int
+
+	if strings.HasPrefix(s, urioj.Prefix) {
+		buf.WriteString(urioj.Prefix)
+	}
+
 	for i := 0; i < len(words); i++ {
 		word = words[i]
 		length = utf8.RuneCountInString(word)

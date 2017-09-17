@@ -10,6 +10,8 @@ import (
 	"golang.org/x/net/html"
 )
 
+const Prefix = "  "
+
 type Sample struct {
 	Input  []string
 	Output []string
