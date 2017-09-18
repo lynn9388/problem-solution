@@ -81,7 +81,7 @@ func removeRedundantSpace(s string) string {
 }
 
 func removeRedundantChar(s string) string {
-	replacer := strings.NewReplacer("\r", "", "\n", "", "\t", "", "\u200B", "", "\u00A0", " ")
+	replacer := strings.NewReplacer("\r", "", "\t", "", "\n", " ", "\u200B", "", "\u00A0", " ")
 	return replacer.Replace(s)
 }
 
