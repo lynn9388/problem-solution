@@ -3,8 +3,11 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"net/http"
 	"os"
+	"path"
 	"strings"
 	"unicode/utf8"
 
@@ -21,6 +24,7 @@ func main() {
 		fmt.Scanf("%d", &id)
 		p, _ := urioj.NewProblem(id)
 		createFile(p)
+		downloadImages(p)
 	}
 }
 
@@ -57,12 +61,16 @@ func comment(p *urioj.Problem) string {
 	return command.String()
 }
 
+func getFolderName(p *urioj.Problem) string {
+	return p.Id + " " + p.Name()
+}
+
 func createFile(p *urioj.Problem) {
 	inputFile := "template/main.go"
 	code, err := ioutil.ReadFile(inputFile)
 	check(err)
 
-	outputDir := p.Id + " " + p.Name()
+	outputDir := getFolderName(p)
 	if _, err := os.Stat(outputDir); os.IsNotExist(err) {
 		err := os.Mkdir(outputDir, 0777)
 		check(err)
@@ -77,6 +85,24 @@ func createFile(p *urioj.Problem) {
 	} else {
 		fmt.Println("File already exists:", outputFile)
 	}
+}
+
+func downloadImages(p *urioj.Problem) {
+	folderName := getFolderName(p)
+	images := p.Images()
+	for _, i := range images {
+		downloadFile(folderName+"/"+path.Base(i), i)
+	}
+}
+
+func downloadFile(filepath string, url string) {
+	out, _ := os.Create(filepath)
+	defer out.Close()
+
+	resp, _ := http.Get(url)
+	defer resp.Body.Close()
+
+	io.Copy(out, resp.Body)
 }
 
 func centerString(s string) string {

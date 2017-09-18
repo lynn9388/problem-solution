@@ -12,6 +12,7 @@ type problem struct {
 	Input       []string
 	Output      []string
 	Samples     []Sample
+	Images      []string
 }
 
 var tests = make([]problem, 0)
@@ -35,6 +36,7 @@ func init() {
 			{[]string{"-10", "4"}, []string{"X = -6"}},
 			{[]string{"15", "-7"}, []string{"X = 8"}},
 		},
+		[]string{},
 	})
 
 	p, _ = NewProblem(1015)
@@ -57,6 +59,9 @@ func init() {
 			{[]string{"-2.5 0.4", "12.1 7.3"}, []string{"16.1484"}},
 			{[]string{"2.5 -0.4", "-12.2 7.0"}, []string{"16.4575"}},
 		},
+		[]string{
+			"https://urionlinejudge.r.worldssl.net/gallery/images/problems/UOJ_1015.png",
+		},
 	})
 
 	p, _ = NewProblem(1021)
@@ -77,6 +82,7 @@ func init() {
 			{[]string{"4.00"}, []string{"NOTAS:", "0 nota(s) de R$ 100.00", "0 nota(s) de R$ 50.00", "0 nota(s) de R$ 20.00", "0 nota(s) de R$ 10.00", "0 nota(s) de R$ 5.00", "2 nota(s) de R$ 2.00", "MOEDAS:", "0 moeda(s) de R$ 1.00", "0 moeda(s) de R$ 0.50", "0 moeda(s) de R$ 0.25", "0 moeda(s) de R$ 0.10", "0 moeda(s) de R$ 0.05", "0 moeda(s) de R$ 0.01"}},
 			{[]string{"91.01"}, []string{"NOTAS:", "0 nota(s) de R$ 100.00", "1 nota(s) de R$ 50.00", "2 nota(s) de R$ 20.00", "0 nota(s) de R$ 10.00", "0 nota(s) de R$ 5.00", "0 nota(s) de R$ 2.00", "MOEDAS:", "1 moeda(s) de R$ 1.00", "0 moeda(s) de R$ 0.50", "0 moeda(s) de R$ 0.25", "0 moeda(s) de R$ 0.10", "0 moeda(s) de R$ 0.05", "1 moeda(s) de R$ 0.01"}},
 		},
+		[]string{},
 	})
 
 	p, _ = NewProblem(1023)
@@ -95,6 +101,7 @@ func init() {
 		[]Sample{
 			{[]string{"3", "3 22", "2 11", "3 39", "5", "1 25", "2 20", "3 31", "2 40", "6 70", "0"}, []string{"Cidade# 1:", "2-5 3-7 3-13", "Consumo medio: 9.00 m3.", "", "Cidade# 2:", "5-10 6-11 2-20 1-25", "Consumo medio: 13.28 m3."}},
 		},
+		[]string{},
 	})
 
 	p, _ = NewProblem(1239)
@@ -130,6 +137,7 @@ func init() {
 		[]Sample{
 			{[]string{"You _should_ see the new walrus at the zoo!", "Move it from *Accounts Payable* to *Receiving*.", "I saw _Chelydra serpentina_ in *Centennial Park*.", "_ _ __ _ yabba dabba _ * dooooo * ****", "_now_I_know_*my*_ABC_next_time_*sing*it_with_me"}, []string{"You <i>should</i> see the new walrus at the zoo!", "Move it from <b>Accounts Payable</b> to <b>Receiving</b>.", "I saw <i>Chelydra serpentina</i> in <b>Centennial Park</b>.", "<i> </i> <i></i> <i> yabba dabba </i> <b> dooooo </b> <b></b><b></b>", "<i>now</i>I<i>know</i><b>my</b><i>ABC</i>next<i>time</i><b>sing</b>it<i>with</i>me"}},
 		},
+		[]string{},
 	})
 }
 
@@ -223,4 +231,8 @@ func TestProblem_GetSamples(t *testing.T) {
 		get := p.p.Samples()
 		check(p.p.Id, expect, get, t)
 	}
+}
+
+func TestProblem_Images(t *testing.T) {
+	testStringSlice((*Problem).Images, "Images", t)
 }

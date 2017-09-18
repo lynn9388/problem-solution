@@ -3,7 +3,6 @@ package urioj
 import (
 	"regexp"
 	"strings"
-
 	"unicode"
 
 	"github.com/PuerkitoBio/goquery"
@@ -43,6 +42,35 @@ func (p *Problem) Samples() []Sample {
 		samples = append(samples, Sample{input, output})
 	}
 	return samples
+}
+
+func (p *Problem) Images() []string {
+	var images []string
+
+	var f func(*html.Node)
+	f = func(n *html.Node) {
+		switch n.Data {
+		case "img":
+			for _, attr := range n.Attr {
+				if attr.Key == "src" {
+					images = append(images, attr.Val)
+					break
+				}
+			}
+		default:
+			if n.FirstChild != nil {
+				for c := n.FirstChild; c != nil; c = c.NextSibling {
+					f(c)
+				}
+			}
+		}
+	}
+
+	for _, n := range p.doc.Find("div.problem").Nodes {
+		f(n)
+	}
+
+	return images
 }
 
 func removeRedundantSpace(s string) string {
