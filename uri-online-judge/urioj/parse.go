@@ -9,7 +9,10 @@ import (
 	"golang.org/x/net/html"
 )
 
-const Prefix = "  "
+var Prefix = map[string]string{
+	"pre": "  ",
+	"ul":  " • ",
+}
 
 type Sample struct {
 	Input  []string
@@ -111,6 +114,12 @@ func text(n *html.Node) []string {
 					break
 				}
 			}
+		case "li":
+			if s := strings.TrimSpace(str); len(s) > 0 {
+				text = append(text, removeRedundantSpace(s))
+			}
+			str = ""
+			fallthrough
 		default:
 			if n.Type == html.TextNode {
 				data := removeRedundantChar(n.Data)
@@ -152,7 +161,14 @@ func extractContent(s *goquery.Selection) []string {
 				content = append(content, "")
 			}
 			for _, t := range text(n) {
-				content = append(content, "  "+t)
+				content = append(content, Prefix["pre"]+t)
+			}
+		case "ul":
+			if len(content) != 0 {
+				content = append(content, "")
+			}
+			for _, t := range text(n) {
+				content = append(content, Prefix["ul"]+t)
 			}
 		default:
 			if n.FirstChild != nil {

@@ -21,7 +21,7 @@ func main() {
 	var id int
 	fmt.Print("Please input the problem id:")
 	for {
-		fmt.Scanf("%d", &id)
+		fmt.Scan(&id)
 		p, _ := urioj.NewProblem(id)
 		createFile(p)
 		downloadImages(p)
@@ -111,15 +111,20 @@ func centerString(s string) string {
 }
 
 func formatString(s string) *bytes.Buffer {
-	words := strings.Split(s, " ")
 	buf := new(bytes.Buffer)
+
+	for _, v := range urioj.Prefix {
+		if strings.HasPrefix(s, v) {
+			buf.WriteString(v)
+			s = strings.TrimPrefix(s, v)
+			break
+		}
+	}
+
+	words := strings.Split(s, " ")
 	width := 0
 	var word string
 	var length int
-
-	if strings.HasPrefix(s, urioj.Prefix) {
-		buf.WriteString(urioj.Prefix)
-	}
 
 	for i := 0; i < len(words); i++ {
 		word = words[i]
