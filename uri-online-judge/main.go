@@ -42,21 +42,14 @@ func comment(p *urioj.Problem) string {
 	samples := p.Samples()
 
 	command := new(bytes.Buffer)
-	command.WriteByte('/')
-	for i := 0; i < lineWidth-1; i++ {
-		command.WriteByte('*')
-	}
-	command.WriteString("\n" +
+	command.WriteString("/" + strings.Repeat("*", lineWidth-1) + "\n" +
 		centerString(name) + "\n" +
 		centerString(p.Url) + "\n\n" +
 		formatStringSlice(description).String() + "\nInput\n*****\n" +
 		formatStringSlice(input).String() + "\nOutput\n******\n" +
 		formatStringSlice(output).String() + "\n" +
-		formatSample(samples).String())
-	for i := 0; i < lineWidth-1; i++ {
-		command.WriteByte('*')
-	}
-	command.WriteString("/\n\n")
+		formatSample(samples).String() +
+		strings.Repeat("*", lineWidth-1) + "/\n\n")
 
 	return command.String()
 }
@@ -113,10 +106,12 @@ func centerString(s string) string {
 func formatString(s string) *bytes.Buffer {
 	buf := new(bytes.Buffer)
 
+	var prefix string
 	for _, v := range urioj.Prefix {
 		if strings.HasPrefix(s, v) {
-			buf.WriteString(v)
-			s = strings.TrimPrefix(s, v)
+			prefix = v
+			buf.WriteString(prefix)
+			s = strings.TrimPrefix(s, prefix)
 			break
 		}
 	}
@@ -138,7 +133,7 @@ func formatString(s string) *bytes.Buffer {
 			buf.WriteString(word)
 			width += length
 		} else {
-			buf.WriteString("\n" + word)
+			buf.WriteString("\n" + strings.Repeat(" ", utf8.RuneCountInString(prefix)) + word)
 			width = length
 		}
 	}
