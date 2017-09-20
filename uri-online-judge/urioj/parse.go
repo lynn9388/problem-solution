@@ -78,9 +78,7 @@ func (p *Problem) Images() []string {
 
 func removeRedundantSpace(s string) string {
 	reg := regexp.MustCompile(`[\s\p{Zs}]{2,}`)
-	s = reg.ReplaceAllString(s, " ")
-	replacer := strings.NewReplacer(" +", " ")
-	return replacer.Replace(s)
+	return reg.ReplaceAllString(s, " ")
 }
 
 func removeRedundantChar(s string) string {
