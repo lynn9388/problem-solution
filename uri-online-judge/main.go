@@ -19,12 +19,16 @@ const lineWidth = 70
 
 func main() {
 	var id int
-	fmt.Print("Please input the problem id:")
 	for {
+		fmt.Print("Please input the problem id:")
 		fmt.Scan(&id)
-		p, _ := urioj.NewProblem(id)
-		createFile(p)
-		downloadImages(p)
+		p, err := urioj.NewProblem(id)
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			createFile(p)
+			downloadImages(p)
+		}
 	}
 }
 

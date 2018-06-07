@@ -4,6 +4,8 @@ import (
 	"strconv"
 
 	"github.com/PuerkitoBio/goquery"
+	"net/http"
+	"errors"
 )
 
 type Problem struct {
@@ -17,7 +19,12 @@ func NewProblem(id int) (*Problem, error) {
 	var err error
 	p.Id = strconv.Itoa(id)
 	p.Url = getUrl(p.Id)
-	p.doc, err = goquery.NewDocument(getDescriptionUrl(p.Id))
+	res, _ := http.Get(getDescriptionUrl(p.Id))
+	if res.StatusCode == 404 {
+		err = errors.New("The problem does not exists ")
+	} else {
+		p.doc, err = goquery.NewDocumentFromReader(res.Body)
+	}
 	return p, err
 }
 
