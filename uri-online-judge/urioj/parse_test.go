@@ -23,13 +23,15 @@ func init() {
 		p,
 		"Extremely Basic",
 		[]string{
-			"Read 2 integer values and store them in variables, named A and B and make the sum of these two variables, assigning its result to the variable X. Print X as shown below. Don't present any message beyond what is being specified and don't forget to print the end of line after the result, otherwise you will receive “Presentation Error”.",
+			"Read 2 variables, named A and B and make the sum of these two variables, assigning its result to the variable X. Print X as shown below. Print endline after the result otherwise you will get “Presentation Error”.",
 		},
 		[]string{
-			"The input file contain 2 integer values.",
+			"The input file will contain 2 integer numbers.",
 		},
 		[]string{
-			"Print the variable X according to the following example, with a blank space before and after the equal signal. 'X' is uppercase and you have to print a blank space before and after the '=' signal.",
+			"Print the letter X (uppercase) with a blank space before and after the equal signal followed by the value of X, according to the following example.",
+			"",
+			"Obs.: don't forget the endline after all.",
 		},
 		[]Sample{
 			{[]string{"10", "9"}, []string{"X = 19"}},
