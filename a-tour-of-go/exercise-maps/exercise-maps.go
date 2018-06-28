@@ -8,12 +8,12 @@ import (
 )
 
 func WordCount(s string) map[string]int {
-	a := make(map[string]int)
-	w := strings.Fields(s)
-	for i := 0; i < len(w); i++ {
-		a[w[i]]++
+	result := make(map[string]int)
+	words := strings.Fields(s)
+	for _, word := range words {
+		result[word]++
 	}
-	return a
+	return result
 }
 
 func main() {

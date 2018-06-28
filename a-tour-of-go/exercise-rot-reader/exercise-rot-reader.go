@@ -14,18 +14,18 @@ type rot13Reader struct {
 func (r rot13Reader) Read(b []byte) (int, error) {
 	n, err := r.r.Read(b)
 	for i, v := range b {
-		b[i] = v
 		if 'A' <= v && v <= 'Z' {
-			b[i] += 13
-			if b[i] > 'Z' {
-				b[i] -= 26
+			v += 13
+			if v > 'Z' {
+				v -= 26
 			}
 		} else if 'a' <= v && v <= 'z' {
-			b[i] += 13
-			if b[i] > 'z' {
-				b[i] -= 26
+			v += 13
+			if v > 'z' {
+				v -= 26
 			}
 		}
+		b[i] = v
 	}
 	return n, err
 }

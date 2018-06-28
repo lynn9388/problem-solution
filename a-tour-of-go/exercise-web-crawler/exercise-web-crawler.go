@@ -34,7 +34,7 @@ func Crawl(url string, depth int, fetcher Fetcher) {
 	v := visited.vit[url]
 	visited.vit[url] = true
 	visited.mux.Unlock()
-	if v != true {
+	if !v {
 		body, urls, err := fetcher.Fetch(url)
 		if err != nil {
 			fmt.Println(err)
@@ -48,12 +48,11 @@ func Crawl(url string, depth int, fetcher Fetcher) {
 		}
 	}
 	wg.Done()
-	return
 }
 
 func main() {
 	wg.Add(1)
-	go Crawl("http://golang.org/", 4, fetcher)
+	Crawl("http://golang.org/", 4, fetcher)
 	wg.Wait()
 }
 
