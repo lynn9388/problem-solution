@@ -31,7 +31,16 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-const lineWidth = 70
+const (
+	lineWidth = 70
+	code      = `package main
+
+import "fmt"
+
+func main() {
+	fmt.Printf("\n")
+}`
+)
 
 func main() {
 	var id int
@@ -79,10 +88,6 @@ func getFolderName(p *urioj.Problem) string {
 }
 
 func createFile(p *urioj.Problem) {
-	inputFile := "template/main.go"
-	code, err := ioutil.ReadFile(inputFile)
-	check(err)
-
 	outputDir := getFolderName(p)
 	if _, err := os.Stat(outputDir); os.IsNotExist(err) {
 		err := os.Mkdir(outputDir, 0777)
