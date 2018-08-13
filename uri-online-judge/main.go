@@ -75,7 +75,7 @@ func comment(p *urioj.Problem) string {
 }
 
 func getFolderName(p *urioj.Problem) string {
-	return p.Id + " " + p.Name()
+	return fmt.Sprintf("%v %v", p.Id, p.Name())
 }
 
 func createFile(p *urioj.Problem) {
