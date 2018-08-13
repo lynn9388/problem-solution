@@ -36,24 +36,24 @@ type Sample struct {
 }
 
 func (p *Problem) Name() string {
-	return strings.TrimSpace(p.doc.Find("div.header > h1").Text())
+	return strings.TrimSpace(p.Doc.Find("div.header > h1").Text())
 }
 
 func (p *Problem) Description() []string {
-	return extractContent(p.doc.Find("div.description"))
+	return extractContent(p.Doc.Find("div.description"))
 }
 
 func (p *Problem) Input() []string {
-	return extractContent(p.doc.Find("div.input"))
+	return extractContent(p.Doc.Find("div.input"))
 }
 
 func (p *Problem) Output() []string {
-	return extractContent(p.doc.Find("div.output"))
+	return extractContent(p.Doc.Find("div.output"))
 }
 
 func (p *Problem) Samples() []Sample {
 	samples := make([]Sample, 0, 5)
-	table := p.doc.Find("tbody")
+	table := p.Doc.Find("tbody")
 	for i := range table.Nodes {
 		sample := table.Eq(i).Find("td")
 		input := formatSample(sample.First().Text())
@@ -85,7 +85,7 @@ func (p *Problem) Images() []string {
 		}
 	}
 
-	for _, n := range p.doc.Find("div.problem").Nodes {
+	for _, n := range p.Doc.Find("div.problem").Nodes {
 		f(n)
 	}
 
