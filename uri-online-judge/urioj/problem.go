@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Lynn
+ * Copyright © 2018 Lynn <lynn9388@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,11 @@
 package urioj
 
 import (
+	"errors"
+	"net/http"
 	"strconv"
 
 	"github.com/PuerkitoBio/goquery"
-	"net/http"
-	"errors"
 )
 
 type Problem struct {
