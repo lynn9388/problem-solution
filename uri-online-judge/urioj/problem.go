@@ -17,37 +17,40 @@
 package urioj
 
 import (
-	"errors"
 	"net/http"
+	"net/url"
 	"strconv"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
 type Problem struct {
-	Id  string
+	Id  int
 	Url string
-	doc *goquery.Document
+	Doc *goquery.Document
 }
 
 func NewProblem(id int) (*Problem, error) {
-	p := new(Problem)
-	var err error
-	p.Id = strconv.Itoa(id)
-	p.Url = getUrl(p.Id)
-	res, _ := http.Get(getDescriptionUrl(p.Id))
-	if res.StatusCode == 404 {
-		err = errors.New("The problem does not exists ")
-	} else {
-		p.doc, err = goquery.NewDocumentFromReader(res.Body)
+	p := Problem{Id: id, Url: getURL(id)}
+
+	proxyUrl, _ := url.Parse("socks5://localhost:1080")
+	tr := &http.Transport{Proxy: http.ProxyURL(proxyUrl)}
+	client := &http.Client{Transport: tr, Timeout: 5 * time.Second}
+	res, err := client.Get(getDescriptionUrl(p.Id))
+
+	if err != nil {
+		return nil, err
 	}
-	return p, err
+	defer res.Body.Close()
+	p.Doc, err = goquery.NewDocumentFromReader(res.Body)
+	return &p, err
 }
 
-func getUrl(id string) string {
-	return "https://www.urionlinejudge.com.br/judge/en/problems/view/" + id
+func getURL(id int) string {
+	return "https://www.urionlinejudge.com.br/judge/en/problems/view/" + strconv.Itoa(id)
 }
 
-func getDescriptionUrl(id string) string {
-	return "https://www.urionlinejudge.com.br/repository/UOJ_" + id + "_en.html"
+func getDescriptionUrl(id int) string {
+	return "https://www.urionlinejudge.com.br/repository/UOJ_" + strconv.Itoa(id) + "_en.html"
 }
