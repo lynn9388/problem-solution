@@ -22,7 +22,20 @@ import (
 	"strconv"
 	"time"
 
+	"log"
+
 	"github.com/PuerkitoBio/goquery"
+	"github.com/tdewolff/minify"
+	"github.com/tdewolff/minify/html"
+)
+
+const (
+	nameSelector        = "div.header > h1"
+	descriptionSelector = "div.description"
+	inputSelector       = "div.input"
+	outputSelector      = "div.output"
+	tableSelector       = "table"
+	sampleSelector      = "div.problem > " + tableSelector
 )
 
 type Problem struct {
@@ -32,12 +45,12 @@ type Problem struct {
 }
 
 func NewProblem(id int) (*Problem, error) {
-	p := Problem{Id: id, Url: getURL(id)}
+	p := Problem{Id: id, Url: GetURL(id)}
 
 	proxyUrl, _ := url.Parse("socks5://localhost:1080")
 	tr := &http.Transport{Proxy: http.ProxyURL(proxyUrl)}
 	client := &http.Client{Transport: tr, Timeout: 5 * time.Second}
-	res, err := client.Get(getDescriptionUrl(p.Id))
+	res, err := client.Get(GetDescriptionUrl(p.Id))
 
 	if err != nil {
 		return nil, err
@@ -47,10 +60,57 @@ func NewProblem(id int) (*Problem, error) {
 	return &p, err
 }
 
-func getURL(id int) string {
+func GetURL(id int) string {
 	return "https://www.urionlinejudge.com.br/judge/en/problems/view/" + strconv.Itoa(id)
 }
 
-func getDescriptionUrl(id int) string {
+func GetDescriptionUrl(id int) string {
 	return "https://www.urionlinejudge.com.br/repository/UOJ_" + strconv.Itoa(id) + "_en.html"
+}
+
+func GetDocument(rawurl string) (*goquery.Document, error) {
+	proxyURL, _ := url.Parse("socks5://localhost:1080")
+	tr := &http.Transport{Proxy: http.ProxyURL(proxyURL)}
+	client := &http.Client{Transport: tr, Timeout: 5 * time.Second}
+	res, err := client.Get(rawurl)
+
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	m := minify.New()
+	m.Add("text/html", &html.Minifier{
+		KeepConditionalComments: true,
+		KeepDefaultAttrVals:     true,
+		KeepDocumentTags:        true,
+		KeepEndTags:             true,
+		KeepWhitespace:          true,
+	})
+	mr := m.Reader("text/html", res.Body)
+
+	return goquery.NewDocumentFromReader(mr)
+}
+
+func FindContent(d *goquery.Document, selector string) *goquery.Selection {
+	return d.Find(selector)
+}
+
+func FindWholeTable(firstTableNode *goquery.Selection) *goquery.Selection {
+	if !firstTableNode.Is(tableSelector) {
+		h, _ := firstTableNode.Html()
+		log.Fatalf("not find talbe from a table node:%v", h)
+	}
+
+	table := firstTableNode.First()
+	c := firstTableNode.Parent().Children()
+
+	for i := c.IndexOfSelection(firstTableNode) + 1; i < len(c.Nodes); i++ {
+		n := c.Eq(i)
+		if !n.Is(tableSelector) {
+			break
+		}
+		table = table.AddSelection(n)
+	}
+	return table
 }
