@@ -85,13 +85,7 @@ func getDocument(rawurl string) (*goquery.Document, error) {
 	defer res.Body.Close()
 
 	m := minify.New()
-	m.Add("text/html", &html.Minifier{
-		KeepConditionalComments: true,
-		KeepDefaultAttrVals:     true,
-		KeepDocumentTags:        true,
-		KeepEndTags:             true,
-		KeepWhitespace:          true,
-	})
+	m.AddFunc("text/html", html.Minify)
 	mr := m.Reader("text/html", res.Body)
 
 	return goquery.NewDocumentFromReader(mr)

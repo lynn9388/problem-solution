@@ -17,7 +17,6 @@
 package urioj
 
 import (
-	"strings"
 	"testing"
 )
 
@@ -47,16 +46,10 @@ func TestGetDocument(t *testing.T) {
 
 func TestFindContent(t *testing.T) {
 	tests := map[string]string{
-		nameSelector: "Extremely Basic",
-		descriptionSelector: `<p>
-Read 2 variables, named <strong>A</strong> and <strong>B</strong> and make the sum of these two variables, assigning its result to the variable <strong>X</strong>. Print <strong>X</strong> as shown below. Print endline after the result otherwise you will get “<em>Presentation Error</em>”.
-</p>`,
-		inputSelector: `<p>
-The input file will contain 2 integer numbers.
-</p>`,
-		outputSelector: `<p>
-Print the letter <strong>X</strong> (uppercase) with a blank space before and after the equal signal followed by the value of X, according to the following example. </p> <p> Obs.: don&#39;t forget the endline after all.
-</p>`,
+		nameSelector:        "Extremely Basic",
+		descriptionSelector: `<p>Read 2 variables, named <strong>A</strong> and <strong>B</strong> and make the sum of these two variables, assigning its result to the variable <strong>X</strong>. Print <strong>X</strong> as shown below. Print endline after the result otherwise you will get “<em>Presentation Error</em>”.</p>`,
+		inputSelector:       `<p>The input file will contain 2 integer numbers.</p>`,
+		outputSelector:      `<p>Print the letter <strong>X</strong> (uppercase) with a blank space before and after the equal signal followed by the value of X, according to the following example.</p><p>Obs.: don&#39;t forget the endline after all.</p>`,
 	}
 	d, _ := getDocument(getDescriptionUrl(1001))
 	for selector, expect := range tests {
@@ -67,7 +60,6 @@ Print the letter <strong>X</strong> (uppercase) with a blank space before and af
 			h, _ := content.Eq(i).Html()
 			get += h
 		}
-		get = strings.TrimSpace(get)
 		if get != expect {
 			t.Errorf("content of %q doesn't match:\nExpect:\n%v\nGet:\n%v\n", selector, expect, get)
 		}
