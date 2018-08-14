@@ -38,37 +38,42 @@ const (
 	sampleSelector      = "div.problem > " + tableSelector
 )
 
+type Content interface{}
+type TextContent string
+type FileContent string
+type TableContent struct {
+	head []string
+	data [][]string
+}
+
 type Problem struct {
-	Id  int
-	Url string
-	Doc *goquery.Document
+	Id          int
+	Url         string
+	Name        string
+	Description []Content
+	Input       []Content
+	Output      []Content
+	Sample      []Content
 }
 
 func NewProblem(id int) (*Problem, error) {
-	p := Problem{Id: id, Url: GetURL(id)}
+	p := Problem{Id: id, Url: getURL(id)}
 
-	proxyUrl, _ := url.Parse("socks5://localhost:1080")
-	tr := &http.Transport{Proxy: http.ProxyURL(proxyUrl)}
-	client := &http.Client{Transport: tr, Timeout: 5 * time.Second}
-	res, err := client.Get(GetDescriptionUrl(p.Id))
-
+	d, err := getDocument(getDescriptionUrl(id))
 	if err != nil {
 		return nil, err
 	}
-	defer res.Body.Close()
-	p.Doc, err = goquery.NewDocumentFromReader(res.Body)
-	return &p, err
+
+	p.Name = getName(d)
+
+	return &p, nil
 }
 
-func GetURL(id int) string {
-	return "https://www.urionlinejudge.com.br/judge/en/problems/view/" + strconv.Itoa(id)
-}
-
-func GetDescriptionUrl(id int) string {
+func getDescriptionUrl(id int) string {
 	return "https://www.urionlinejudge.com.br/repository/UOJ_" + strconv.Itoa(id) + "_en.html"
 }
 
-func GetDocument(rawurl string) (*goquery.Document, error) {
+func getDocument(rawurl string) (*goquery.Document, error) {
 	proxyURL, _ := url.Parse("socks5://localhost:1080")
 	tr := &http.Transport{Proxy: http.ProxyURL(proxyURL)}
 	client := &http.Client{Transport: tr, Timeout: 5 * time.Second}
@@ -92,11 +97,11 @@ func GetDocument(rawurl string) (*goquery.Document, error) {
 	return goquery.NewDocumentFromReader(mr)
 }
 
-func FindContent(d *goquery.Document, selector string) *goquery.Selection {
+func findContent(d *goquery.Document, selector string) *goquery.Selection {
 	return d.Find(selector)
 }
 
-func FindWholeTable(firstTableNode *goquery.Selection) *goquery.Selection {
+func findWholeTable(firstTableNode *goquery.Selection) *goquery.Selection {
 	if !firstTableNode.Is(tableSelector) {
 		h, _ := firstTableNode.Html()
 		log.Fatalf("not find talbe from a table node:%v", h)
@@ -113,4 +118,12 @@ func FindWholeTable(firstTableNode *goquery.Selection) *goquery.Selection {
 		table = table.AddSelection(n)
 	}
 	return table
+}
+
+func getURL(id int) string {
+	return "https://www.urionlinejudge.com.br/judge/en/problems/view/" + strconv.Itoa(id)
+}
+
+func getName(d *goquery.Document) string {
+	return findContent(d, nameSelector).Text()
 }

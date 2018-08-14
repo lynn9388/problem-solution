@@ -1,3 +1,19 @@
+/*
+ * Copyright © 2018 Lynn <lynn9388@gmail.com>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package urioj
 
 import (
@@ -5,39 +21,15 @@ import (
 	"testing"
 )
 
-func TestNewProblem(t *testing.T) {
-	p, err := NewProblem(1001)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if p.Doc == nil {
-		t.FailNow()
-	}
-	html, err := p.Doc.Html()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(html) == 0 {
-		t.FailNow()
-	}
-}
-
-func TestGetURL(t *testing.T) {
-	url := "https://www.urionlinejudge.com.br/judge/en/problems/view/1001"
-	if GetURL(1001) != url {
-		t.FailNow()
-	}
-}
-
 func TestGetDescriptionUrl(t *testing.T) {
 	url := "https://www.urionlinejudge.com.br/repository/UOJ_1001_en.html"
-	if GetDescriptionUrl(1001) != url {
+	if getDescriptionUrl(1001) != url {
 		t.FailNow()
 	}
 }
 
 func TestGetDocument(t *testing.T) {
-	d, err := GetDocument(GetDescriptionUrl(1001))
+	d, err := getDocument(getDescriptionUrl(1001))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -66,9 +58,9 @@ The input file will contain 2 integer numbers.
 Print the letter <strong>X</strong> (uppercase) with a blank space before and after the equal signal followed by the value of X, according to the following example. </p> <p> Obs.: don&#39;t forget the endline after all.
 </p>`,
 	}
-	d, _ := GetDocument(GetDescriptionUrl(1001))
+	d, _ := getDocument(getDescriptionUrl(1001))
 	for selector, expect := range tests {
-		content := FindContent(d, selector)
+		content := findContent(d, selector)
 
 		var get string
 		for i := range content.Nodes {
@@ -92,10 +84,17 @@ func TestFindWholeTable(t *testing.T) {
 	}
 
 	for id, v := range tests {
-		d, _ := GetDocument(GetDescriptionUrl(id))
-		table := FindWholeTable(FindContent(d, v.selector))
+		d, _ := getDocument(getDescriptionUrl(id))
+		table := findWholeTable(findContent(d, v.selector))
 		if len(table.Nodes) != v.numRow {
 			t.Errorf("row number of %v %q doesn't match:\nExpect:%v\nGet:%v\n", id, v.selector, v.numRow, len(table.Nodes))
 		}
+	}
+}
+
+func TestGetURL(t *testing.T) {
+	url := "https://www.urionlinejudge.com.br/judge/en/problems/view/1001"
+	if getURL(1001) != url {
+		t.FailNow()
 	}
 }
