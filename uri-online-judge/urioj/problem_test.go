@@ -124,12 +124,23 @@ func TestGetName(t *testing.T) {
 	}
 }
 
-func TestGetDescription(t *testing.T) {
+func TestGetContent(t *testing.T) {
 	for _, p := range tests {
 		d, _ := getDocument(getDescriptionUrl(p.Id))
-		des := getDescription(d)
-		if err := checkContents(p.Description, des); err != nil {
+		description := getDescription(d)
+		input := getInput(d)
+		output := getOutput(d)
+
+		if err := checkContents(p.Description, description); err != nil {
 			t.Fatalf("description of %v doesn't match:\n%v", p.Id, err)
+		}
+
+		if err := checkContents(p.Input, input); err != nil {
+			t.Fatalf("input of %v doesn't match:\n%v", p.Id, err)
+		}
+
+		if err := checkContents(p.Output, output); err != nil {
+			t.Fatalf("output of %v doesn't match:\n%v", p.Id, err)
 		}
 	}
 }

@@ -84,6 +84,8 @@ func NewProblem(id int) (*Problem, error) {
 
 	p.Name = getName(d)
 	p.Description = getDescription(d)
+	p.Input = getInput(d)
+	p.Output = getOutput(d)
 
 	return &p, nil
 }
@@ -141,6 +143,14 @@ func getName(d *goquery.Document) string {
 
 func getDescription(d *goquery.Document) []Content {
 	return getContent(d.Find(descriptionSelector))
+}
+
+func getInput(d *goquery.Document) []Content {
+	return getContent(d.Find(inputSelector))
+}
+
+func getOutput(d *goquery.Document) []Content {
+	return getContent(d.Find(outputSelector))
 }
 
 func getContent(s *goquery.Selection) []Content {
