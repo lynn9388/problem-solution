@@ -26,7 +26,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/tdewolff/minify"
-	"github.com/tdewolff/minify/html"
+	html2 "github.com/tdewolff/minify/html"
 )
 
 const (
@@ -85,14 +85,10 @@ func getDocument(rawurl string) (*goquery.Document, error) {
 	defer res.Body.Close()
 
 	m := minify.New()
-	m.AddFunc("text/html", html.Minify)
+	m.AddFunc("text/html", html2.Minify)
 	mr := m.Reader("text/html", res.Body)
 
 	return goquery.NewDocumentFromReader(mr)
-}
-
-func findContent(d *goquery.Document, selector string) *goquery.Selection {
-	return d.Find(selector)
 }
 
 func findWholeTable(firstTableNode *goquery.Selection) *goquery.Selection {
@@ -119,5 +115,5 @@ func getURL(id int) string {
 }
 
 func getName(d *goquery.Document) string {
-	return findContent(d, nameSelector).Text()
+	return d.Find(nameSelector).Text()
 }

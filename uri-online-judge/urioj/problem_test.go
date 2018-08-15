@@ -44,7 +44,7 @@ func TestGetDocument(t *testing.T) {
 	}
 }
 
-func TestFindContent(t *testing.T) {
+func TestSelector(t *testing.T) {
 	tests := map[string]string{
 		nameSelector:        "Extremely Basic",
 		descriptionSelector: `<p>Read 2 variables, named <strong>A</strong> and <strong>B</strong> and make the sum of these two variables, assigning its result to the variable <strong>X</strong>. Print <strong>X</strong> as shown below. Print endline after the result otherwise you will get “<em>Presentation Error</em>”.</p>`,
@@ -53,7 +53,7 @@ func TestFindContent(t *testing.T) {
 	}
 	d, _ := getDocument(getDescriptionUrl(1001))
 	for selector, expect := range tests {
-		content := findContent(d, selector)
+		content := d.Find(selector)
 
 		var get string
 		for i := range content.Nodes {
@@ -77,7 +77,7 @@ func TestFindWholeTable(t *testing.T) {
 
 	for id, v := range tests {
 		d, _ := getDocument(getDescriptionUrl(id))
-		table := findWholeTable(findContent(d, v.selector))
+		table := findWholeTable(d.Find(v.selector))
 		if len(table.Nodes) != v.numRow {
 			t.Errorf("row number of %v %q doesn't match:\nExpect:%v\nGet:%v\n", id, v.selector, v.numRow, len(table.Nodes))
 		}
