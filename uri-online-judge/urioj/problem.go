@@ -18,13 +18,15 @@ package urioj
 
 import (
 	"bytes"
+	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
+	"reflect"
 	"strconv"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/pkg/errors"
 	"github.com/tdewolff/minify"
 	html2 "github.com/tdewolff/minify/html"
 	"golang.org/x/net/html"
@@ -39,7 +41,9 @@ const (
 	sampleSelector      = "div.problem > " + tableSelector
 )
 
-type Content interface{}
+type Content interface {
+	equal(interface{}) bool
+}
 type TextContent string
 type FileContent string
 type tableData []string
@@ -58,6 +62,18 @@ type Problem struct {
 	Sample      []Content
 }
 
+func (t TextContent) equal(c interface{}) bool {
+	return t == c.(TextContent)
+}
+
+func (f FileContent) equal(c interface{}) bool {
+	return f == c.(FileContent)
+}
+
+func (t TableContent) equal(c interface{}) bool {
+	return reflect.DeepEqual(t, c.(TableContent))
+}
+
 func NewProblem(id int) (*Problem, error) {
 	p := Problem{Id: id, Url: getURL(id)}
 
@@ -67,6 +83,7 @@ func NewProblem(id int) (*Problem, error) {
 	}
 
 	p.Name = getName(d)
+	p.Description = getDescription(d)
 
 	return &p, nil
 }
@@ -120,6 +137,72 @@ func getURL(id int) string {
 
 func getName(d *goquery.Document) string {
 	return d.Find(nameSelector).Text()
+}
+
+func getDescription(d *goquery.Document) []Content {
+	return getContent(d.Find(descriptionSelector))
+}
+
+func getContent(s *goquery.Selection) []Content {
+	var content []Content
+
+	var f func(*goquery.Selection)
+	f = func(s *goquery.Selection) {
+		for i, n := range s.Nodes {
+			switch n.Data {
+			case "p":
+				content = append(content, renderParagraph(n)...)
+			default:
+				c := s.Eq(i).Children()
+				for i := range c.Nodes {
+					f(c.Eq(i))
+				}
+			}
+		}
+	}
+	f(s)
+	return content
+}
+
+func renderParagraph(n *html.Node) []Content {
+	var content []Content
+	var textBuf bytes.Buffer
+
+	var f func(*html.Node)
+	f = func(n *html.Node) {
+		switch n.Data {
+		case "img":
+			if textBuf.Len() != 0 {
+				content = append(content, TextContent(textBuf.String()))
+				textBuf.Reset()
+			}
+			content = append(content, renderImage(n))
+		default:
+			if n.Type == html.TextNode {
+				textBuf.WriteString(n.Data)
+			} else {
+				for c := n.FirstChild; c != nil; c = c.NextSibling {
+					f(c)
+				}
+			}
+		}
+	}
+	f(n)
+	if textBuf.Len() != 0 {
+		content = append(content, TextContent(textBuf.String()))
+	}
+	return content
+}
+
+func renderImage(n *html.Node) Content {
+	var image FileContent
+	for _, attr := range n.Attr {
+		if attr.Key != "src" {
+			continue
+		}
+		image = FileContent(fmt.Sprintf("<img src=%q>", attr.Val))
+	}
+	return image
 }
 
 func getHTML(s *goquery.Selection) string {

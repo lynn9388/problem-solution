@@ -17,7 +17,10 @@
 package urioj
 
 import (
+	"fmt"
 	"testing"
+
+	"github.com/pkg/errors"
 )
 
 var tests []Problem = []Problem{
@@ -73,7 +76,7 @@ func TestSelector(t *testing.T) {
 	for selector, expect := range tests {
 		get := getHTML(d.Find(selector))
 		if get != expect {
-			t.Errorf("content of %q doesn't match:\nExpect:\n%v\nGet:\n%v\n", selector, expect, get)
+			t.Errorf("content of %q doesn't match:\nExpect: %v\nGet: %v\n", selector, expect, get)
 		}
 	}
 }
@@ -97,7 +100,7 @@ func TestFindWholeTable(t *testing.T) {
 			t.Fatal(err)
 		}
 		if len(table.Nodes) != v.numRow {
-			t.Fatalf("row number of %v %q doesn't match:\nExpect:%v\nGet:%v\n", id, v.selector, v.numRow, len(table.Nodes))
+			t.Fatalf("row number of %v %q doesn't match:\nExpect: %v\nGet: %v\n", id, v.selector, v.numRow, len(table.Nodes))
 		}
 	}
 }
@@ -106,7 +109,7 @@ func TestGetURL(t *testing.T) {
 	for _, p := range tests {
 		url := getURL(p.Id)
 		if url != p.Url {
-			t.Fatalf("url of %v don't match:\nExpect:%v\nGet:%v\n", p.Id, p.Url, url)
+			t.Fatalf("url of %v doesn't match:\nExpect: %v\nGet: %v\n", p.Id, p.Url, url)
 		}
 	}
 }
@@ -116,7 +119,31 @@ func TestGetName(t *testing.T) {
 		d, _ := getDocument(getDescriptionUrl(p.Id))
 		name := getName(d)
 		if name != p.Name {
-			t.Fatalf("name of %v don't match:\nExpect:%v\nGet:%v\n", p.Id, p.Name, name)
+			t.Fatalf("name of %v doesn't match:\nExpect: %v\nGet: %v\n", p.Id, p.Name, name)
 		}
 	}
+}
+
+func TestGetDescription(t *testing.T) {
+	for _, p := range tests {
+		d, _ := getDocument(getDescriptionUrl(p.Id))
+		des := getDescription(d)
+		if err := checkContents(p.Description, des); err != nil {
+			t.Fatalf("description of %v doesn't match:\n%v", p.Id, err)
+		}
+	}
+}
+
+func checkContents(expect []Content, get []Content) error {
+	if len(expect) != len(get) {
+		return errors.New(fmt.Sprintf("length of data doesn't match:\nExpect: %v\nGet: %v\n", len(expect), len(get)))
+	}
+
+	for i := range expect {
+		if !expect[i].equal(get[i]) {
+			return errors.New(fmt.Sprintf("data doesn't match:\nExpect: %v\nGet: %v\n", expect[i], get[i]))
+		}
+	}
+
+	return nil
 }
