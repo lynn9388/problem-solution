@@ -42,9 +42,10 @@ const (
 type Content interface{}
 type TextContent string
 type FileContent string
+type tableData []string
 type TableContent struct {
 	head []string
-	data [][]string
+	data [][]tableData
 }
 
 type Problem struct {
@@ -129,4 +130,18 @@ func getHTML(s *goquery.Selection) string {
 		}
 	}
 	return buf.String()
+}
+
+func newTable(head []string, data ...tableData) (*TableContent, error) {
+	if len(data)%len(head) != 0 {
+		return nil, errors.New("number of table data is not enough: " + strconv.Itoa(len(data)))
+	}
+
+	var content TableContent
+	content.head = head
+	content.data = make([][]tableData, len(data)/len(head))
+	for r := range content.data {
+		content.data[r] = data[r*len(head) : r*len(head)+len(head)]
+	}
+	return &content, nil
 }

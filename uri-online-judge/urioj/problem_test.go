@@ -20,6 +20,24 @@ import (
 	"testing"
 )
 
+var tests []Problem = []Problem{
+	{Id: 1001, Url: "https://www.urionlinejudge.com.br/judge/en/problems/view/1001", Name: "Extremely Basic",
+		Description: []Content{TextContent(`Read 2 variables, named A and B and make the sum of these two variables, assigning its result to the variable X. Print X as shown below. Print endline after the result otherwise you will get “Presentation Error”.`)},
+		Input:       []Content{TextContent(`The input file will contain 2 integer numbers.`)},
+		Output:      []Content{TextContent(`Print the letter X (uppercase) with a blank space before and after the equal signal followed by the value of X, according to the following example.`), TextContent(`Obs.: don't forget the endline after all.`)},
+		Sample: []Content{*generateTable([]string{"Samples Input", "Samples Output"},
+			tableData{"10", "9"}, tableData{"X = 19"},
+			tableData{"-10", "4"}, tableData{"X = -6"},
+			tableData{"15", "-7"}, tableData{"X = 8"},
+		)},
+	},
+}
+
+func generateTable(head []string, data ...tableData) *TableContent {
+	t, _ := newTable(head, data...)
+	return t
+}
+
 func TestGetDescriptionUrl(t *testing.T) {
 	url := "https://www.urionlinejudge.com.br/repository/UOJ_1001_en.html"
 	if getDescriptionUrl(1001) != url {
@@ -46,10 +64,10 @@ func TestGetDocument(t *testing.T) {
 
 func TestSelector(t *testing.T) {
 	tests := map[string]string{
-		nameSelector:        "Extremely Basic",
-		descriptionSelector: `<p>Read 2 variables, named <strong>A</strong> and <strong>B</strong> and make the sum of these two variables, assigning its result to the variable <strong>X</strong>. Print <strong>X</strong> as shown below. Print endline after the result otherwise you will get “<em>Presentation Error</em>”.</p>`,
-		inputSelector:       `<p>The input file will contain 2 integer numbers.</p>`,
-		outputSelector:      `<p>Print the letter <strong>X</strong> (uppercase) with a blank space before and after the equal signal followed by the value of X, according to the following example.</p><p>Obs.: don&#39;t forget the endline after all.</p>`,
+		nameSelector:        `<h1>Extremely Basic</h1>`,
+		descriptionSelector: `<div class="description"><p>Read 2 variables, named <strong>A</strong> and <strong>B</strong> and make the sum of these two variables, assigning its result to the variable <strong>X</strong>. Print <strong>X</strong> as shown below. Print endline after the result otherwise you will get “<em>Presentation Error</em>”.</p></div>`,
+		inputSelector:       `<div class="input"><p>The input file will contain 2 integer numbers.</p></div>`,
+		outputSelector:      `<div class="output"><p>Print the letter <strong>X</strong> (uppercase) with a blank space before and after the equal signal followed by the value of X, according to the following example.</p><p>Obs.: don&#39;t forget the endline after all.</p></div>`,
 	}
 	d, _ := getDocument(getDescriptionUrl(1001))
 	for selector, expect := range tests {
@@ -85,8 +103,20 @@ func TestFindWholeTable(t *testing.T) {
 }
 
 func TestGetURL(t *testing.T) {
-	url := "https://www.urionlinejudge.com.br/judge/en/problems/view/1001"
-	if getURL(1001) != url {
-		t.FailNow()
+	for _, p := range tests {
+		url := getURL(p.Id)
+		if url != p.Url {
+			t.Fatalf("url of %v don't match:\nExpect:%v\nGet:%v\n", p.Id, p.Url, url)
+		}
+	}
+}
+
+func TestGetName(t *testing.T) {
+	for _, p := range tests {
+		d, _ := getDocument(getDescriptionUrl(p.Id))
+		name := getName(d)
+		if name != p.Name {
+			t.Fatalf("name of %v don't match:\nExpect:%v\nGet:%v\n", p.Id, p.Name, name)
+		}
 	}
 }
