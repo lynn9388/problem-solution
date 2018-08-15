@@ -17,16 +17,17 @@
 package urioj
 
 import (
+	"bytes"
 	"net/http"
 	"net/url"
 	"strconv"
 	"time"
 
-	"log"
-
 	"github.com/PuerkitoBio/goquery"
+	"github.com/pkg/errors"
 	"github.com/tdewolff/minify"
 	html2 "github.com/tdewolff/minify/html"
+	"golang.org/x/net/html"
 )
 
 const (
@@ -91,23 +92,25 @@ func getDocument(rawurl string) (*goquery.Document, error) {
 	return goquery.NewDocumentFromReader(mr)
 }
 
-func findWholeTable(firstTableNode *goquery.Selection) *goquery.Selection {
-	if !firstTableNode.Is(tableSelector) {
-		h, _ := firstTableNode.Html()
-		log.Fatalf("not find talbe from a table node:%v", h)
+func findWholeTable(firstRow *goquery.Selection) (*goquery.Selection, error) {
+	if firstRow.Length() != 1 {
+		return nil, errors.New("firstRow is not one row: " + strconv.Itoa(firstRow.Length()))
 	}
 
-	table := firstTableNode.First()
-	c := firstTableNode.Parent().Children()
+	if !firstRow.Is(tableSelector) {
+		return nil, errors.New("firstRow is not a table: " + getHTML(firstRow))
+	}
 
-	for i := c.IndexOfSelection(firstTableNode) + 1; i < len(c.Nodes); i++ {
+	table := firstRow
+	c := firstRow.Parent().Children()
+	for i := c.IndexOfSelection(firstRow) + 1; i < c.Length(); i++ {
 		n := c.Eq(i)
 		if !n.Is(tableSelector) {
 			break
 		}
 		table = table.AddSelection(n)
 	}
-	return table
+	return table, nil
 }
 
 func getURL(id int) string {
@@ -116,4 +119,14 @@ func getURL(id int) string {
 
 func getName(d *goquery.Document) string {
 	return d.Find(nameSelector).Text()
+}
+
+func getHTML(s *goquery.Selection) string {
+	var buf bytes.Buffer
+	for _, n := range s.Nodes {
+		if html.Render(&buf, n) != nil {
+			return ""
+		}
+	}
+	return buf.String()
 }

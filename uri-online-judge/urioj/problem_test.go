@@ -53,13 +53,7 @@ func TestSelector(t *testing.T) {
 	}
 	d, _ := getDocument(getDescriptionUrl(1001))
 	for selector, expect := range tests {
-		content := d.Find(selector)
-
-		var get string
-		for i := range content.Nodes {
-			h, _ := content.Eq(i).Html()
-			get += h
-		}
+		get := getHTML(d.Find(selector))
 		if get != expect {
 			t.Errorf("content of %q doesn't match:\nExpect:\n%v\nGet:\n%v\n", selector, expect, get)
 		}
@@ -76,10 +70,16 @@ func TestFindWholeTable(t *testing.T) {
 	}
 
 	for id, v := range tests {
-		d, _ := getDocument(getDescriptionUrl(id))
-		table := findWholeTable(d.Find(v.selector))
+		d, err := getDocument(getDescriptionUrl(id))
+		if err != nil {
+			t.Fatal(err)
+		}
+		table, err := findWholeTable(d.Find(v.selector).First())
+		if err != nil {
+			t.Fatal(err)
+		}
 		if len(table.Nodes) != v.numRow {
-			t.Errorf("row number of %v %q doesn't match:\nExpect:%v\nGet:%v\n", id, v.selector, v.numRow, len(table.Nodes))
+			t.Fatalf("row number of %v %q doesn't match:\nExpect:%v\nGet:%v\n", id, v.selector, v.numRow, len(table.Nodes))
 		}
 	}
 }
