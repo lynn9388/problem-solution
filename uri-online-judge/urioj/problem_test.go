@@ -17,10 +17,9 @@
 package urioj
 
 import (
+	"errors"
 	"fmt"
 	"testing"
-
-	"github.com/pkg/errors"
 )
 
 var tests []Problem = []Problem{
@@ -29,14 +28,14 @@ var tests []Problem = []Problem{
 		Input:       []Content{TextContent(`The input file will contain 2 integer numbers.`)},
 		Output:      []Content{TextContent(`Print the letter X (uppercase) with a blank space before and after the equal signal followed by the value of X, according to the following example.`), TextContent(`Obs.: don't forget the endline after all.`)},
 		Sample: []Content{*generateTable([]string{"Samples Input", "Samples Output"},
-			tableData{"10", "9"}, tableData{"X = 19"},
-			tableData{"-10", "4"}, tableData{"X = -6"},
-			tableData{"15", "-7"}, tableData{"X = 8"},
+			TableData{"10", "9"}, TableData{"X = 19"},
+			TableData{"-10", "4"}, TableData{"X = -6"},
+			TableData{"15", "-7"}, TableData{"X = 8"},
 		)},
 	},
 }
 
-func generateTable(head []string, data ...tableData) *TableContent {
+func generateTable(head []string, data ...TableData) *TableContent {
 	t, _ := newTable(head, data...)
 	return t
 }
@@ -130,6 +129,7 @@ func TestGetContent(t *testing.T) {
 		description := getDescription(d)
 		input := getInput(d)
 		output := getOutput(d)
+		sample := getSample(d)
 
 		if err := checkContents(p.Description, description); err != nil {
 			t.Fatalf("description of %v doesn't match:\n%v", p.Id, err)
@@ -141,6 +141,10 @@ func TestGetContent(t *testing.T) {
 
 		if err := checkContents(p.Output, output); err != nil {
 			t.Fatalf("output of %v doesn't match:\n%v", p.Id, err)
+		}
+
+		if err := checkContents(p.Sample, sample); err != nil {
+			t.Fatalf("sample of %v doesn't match:\n%v", p.Id, err)
 		}
 	}
 }

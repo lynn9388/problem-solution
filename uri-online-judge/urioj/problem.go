@@ -27,6 +27,7 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/dedis/student_18/dgcosi/code/onet/log"
 	"github.com/tdewolff/minify"
 	html2 "github.com/tdewolff/minify/html"
 	"golang.org/x/net/html"
@@ -46,10 +47,11 @@ type Content interface {
 }
 type TextContent string
 type FileContent string
-type tableData []string
+type TableData []string
+type TableRow []TableData
 type TableContent struct {
-	head []string
-	data [][]tableData
+	Head []string
+	Data []TableRow
 }
 
 type Problem struct {
@@ -86,6 +88,7 @@ func NewProblem(id int) (*Problem, error) {
 	p.Description = getDescription(d)
 	p.Input = getInput(d)
 	p.Output = getOutput(d)
+	p.Sample = getSample(d)
 
 	return &p, nil
 }
@@ -153,15 +156,31 @@ func getOutput(d *goquery.Document) []Content {
 	return getContent(d.Find(outputSelector))
 }
 
+func getSample(d *goquery.Document) []Content {
+	return getContent(d.Find(sampleSelector))
+}
+
 func getContent(s *goquery.Selection) []Content {
 	var content []Content
 
 	var f func(*goquery.Selection)
 	f = func(s *goquery.Selection) {
-		for i, n := range s.Nodes {
+		for i := 0; i < s.Length(); i++ {
+			n := s.Nodes[i]
 			switch n.Data {
 			case "p":
 				content = append(content, renderParagraph(n)...)
+			case "table":
+				table, err := findWholeTable(s.Eq(i))
+				if err != nil {
+					log.Fatal(err)
+				}
+				tableContent, err := renderTable(table)
+				if err != nil {
+					log.Fatal(err)
+				}
+				content = append(content, *tableContent)
+				i += len(tableContent.Data) - 1
 			default:
 				c := s.Eq(i).Children()
 				for i := range c.Nodes {
@@ -181,6 +200,11 @@ func renderParagraph(n *html.Node) []Content {
 	var f func(*html.Node)
 	f = func(n *html.Node) {
 		switch n.Data {
+		case "br":
+			if textBuf.Len() != 0 {
+				content = append(content, TextContent(textBuf.String()))
+				textBuf.Reset()
+			}
 		case "img":
 			if textBuf.Len() != 0 {
 				content = append(content, TextContent(textBuf.String()))
@@ -204,7 +228,7 @@ func renderParagraph(n *html.Node) []Content {
 	return content
 }
 
-func renderImage(n *html.Node) Content {
+func renderImage(n *html.Node) FileContent {
 	var image FileContent
 	for _, attr := range n.Attr {
 		if attr.Key != "src" {
@@ -213,6 +237,26 @@ func renderImage(n *html.Node) Content {
 		image = FileContent(fmt.Sprintf("<img src=%q>", attr.Val))
 	}
 	return image
+}
+
+func renderTable(s *goquery.Selection) (*TableContent, error) {
+	var head []string
+	var data []TableData
+
+	th := s.Find("thead").Find("td")
+	for i := range th.Nodes {
+		head = append(head, th.Eq(i).Text())
+	}
+
+	tdp := s.Find("tbody").Find("td").Find("p")
+	for _, n := range tdp.Nodes {
+		var td TableData
+		for _, c := range renderParagraph(n) {
+			td = append(td, string(c.(TextContent)))
+		}
+		data = append(data, td)
+	}
+	return newTable(head, data...)
 }
 
 func getHTML(s *goquery.Selection) string {
@@ -225,16 +269,17 @@ func getHTML(s *goquery.Selection) string {
 	return buf.String()
 }
 
-func newTable(head []string, data ...tableData) (*TableContent, error) {
-	if len(data)%len(head) != 0 {
+func newTable(head []string, data ...TableData) (*TableContent, error) {
+	numColumn := len(head)
+	if len(data)%numColumn != 0 {
 		return nil, errors.New("number of table data is not enough: " + strconv.Itoa(len(data)))
 	}
 
-	var content TableContent
-	content.head = head
-	content.data = make([][]tableData, len(data)/len(head))
-	for r := range content.data {
-		content.data[r] = data[r*len(head) : r*len(head)+len(head)]
+	var table TableContent
+	table.Head = head
+	numRow := len(data) / numColumn
+	for r := 0; r < numRow; r++ {
+		table.Data = append(table.Data, data[r*numColumn:r*numColumn+numColumn])
 	}
-	return &content, nil
+	return &table, nil
 }
