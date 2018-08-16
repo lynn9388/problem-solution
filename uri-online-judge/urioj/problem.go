@@ -26,6 +26,10 @@ import (
 	"strconv"
 	"time"
 
+	"strings"
+
+	"unicode"
+
 	"github.com/PuerkitoBio/goquery"
 	"github.com/dedis/student_18/dgcosi/code/onet/log"
 	"github.com/tdewolff/minify"
@@ -43,7 +47,8 @@ const (
 )
 
 type Content interface {
-	equal(interface{}) bool
+	Equal(interface{}) bool
+	Empty() bool
 }
 type TextContent string
 type FileContent string
@@ -56,7 +61,7 @@ type TableContent struct {
 
 type Problem struct {
 	Id          int
-	Url         string
+	URL         string
 	Name        string
 	Description []Content
 	Input       []Content
@@ -64,32 +69,45 @@ type Problem struct {
 	Sample      []Content
 }
 
-func (t TextContent) equal(c interface{}) bool {
+func (t TextContent) Equal(c interface{}) bool {
 	return t == c.(TextContent)
 }
 
-func (f FileContent) equal(c interface{}) bool {
+func (t TextContent) Empty() bool {
+	return len(t) == 0
+}
+
+func (f FileContent) Equal(c interface{}) bool {
 	return f == c.(FileContent)
 }
 
-func (t TableContent) equal(c interface{}) bool {
+func (f FileContent) Empty() bool {
+	return len(f) == 0
+}
+
+func (t TableContent) Equal(c interface{}) bool {
 	return reflect.DeepEqual(t, c.(TableContent))
 }
 
-func NewProblem(id int) (*Problem, error) {
-	p := Problem{Id: id, Url: getURL(id)}
+func (t TableContent) Empty() bool {
+	return len(t.Head) == 0
+}
 
+func NewProblem(id int) (*Problem, error) {
 	d, err := getDocument(getDescriptionUrl(id))
 	if err != nil {
 		return nil, err
 	}
 
-	p.Name = getName(d)
-	p.Description = getDescription(d)
-	p.Input = getInput(d)
-	p.Output = getOutput(d)
-	p.Sample = getSample(d)
-
+	p := Problem{
+		Id:          id,
+		URL:         getURL(id),
+		Name:        getName(d),
+		Description: getDescription(d),
+		Input:       getInput(d),
+		Output:      getOutput(d),
+		Sample:      getSample(d),
+	}
 	return &p, nil
 }
 
@@ -145,15 +163,15 @@ func getName(d *goquery.Document) string {
 }
 
 func getDescription(d *goquery.Document) []Content {
-	return getContent(d.Find(descriptionSelector))
+	return removeEmptyContent(getContent(d.Find(descriptionSelector)))
 }
 
 func getInput(d *goquery.Document) []Content {
-	return getContent(d.Find(inputSelector))
+	return removeEmptyContent(getContent(d.Find(inputSelector)))
 }
 
 func getOutput(d *goquery.Document) []Content {
-	return getContent(d.Find(outputSelector))
+	return removeEmptyContent(getContent(d.Find(outputSelector)))
 }
 
 func getSample(d *goquery.Document) []Content {
@@ -170,6 +188,8 @@ func getContent(s *goquery.Selection) []Content {
 			switch n.Data {
 			case "p":
 				content = append(content, renderParagraph(n)...)
+			case "pre":
+				content = append(content, TextContent(strings.TrimRightFunc(n.FirstChild.Data, unicode.IsSpace)))
 			case "table":
 				table, err := findWholeTable(s.Eq(i))
 				if err != nil {
@@ -199,28 +219,30 @@ func renderParagraph(n *html.Node) []Content {
 
 	var f func(*html.Node)
 	f = func(n *html.Node) {
-		switch n.Data {
-		case "br":
-			if textBuf.Len() != 0 {
-				content = append(content, TextContent(textBuf.String()))
-				textBuf.Reset()
-			}
-		case "img":
-			if textBuf.Len() != 0 {
-				content = append(content, TextContent(textBuf.String()))
-				textBuf.Reset()
-			}
-			content = append(content, renderImage(n))
-		default:
-			if n.Type == html.TextNode {
-				textBuf.WriteString(n.Data)
-			} else {
-				for c := n.FirstChild; c != nil; c = c.NextSibling {
-					f(c)
+		if n.Type == html.TextNode {
+			textBuf.WriteString(processText(n.Data))
+			return
+		}
+
+		for c := n.FirstChild; c != nil; c = c.NextSibling {
+			switch c.Data {
+			case "br":
+				if textBuf.Len() != 0 {
+					content = append(content, TextContent(textBuf.String()))
+					textBuf.Reset()
+				} else {
+					content = append(content, TextContent(""))
 				}
+			case "img":
+				image, text := renderFile(c)
+				content = append(content, image)
+				textBuf.WriteString(processText(string(text)))
+			default:
+				f(c)
 			}
 		}
 	}
+
 	f(n)
 	if textBuf.Len() != 0 {
 		content = append(content, TextContent(textBuf.String()))
@@ -228,15 +250,37 @@ func renderParagraph(n *html.Node) []Content {
 	return content
 }
 
-func renderImage(n *html.Node) FileContent {
-	var image FileContent
+func processText(s string) string {
+	return strings.Map(func(r rune) rune {
+		switch {
+		case unicode.IsSpace(r):
+			return ' '
+		default:
+			return r
+		}
+	}, s)
+}
+
+func removeEmptyContent(c []Content) []Content {
+	for i := 0; i < len(c); i++ {
+		if c[i].Empty() {
+			c = append(c[:i], c[i+1:]...)
+		}
+	}
+	return c
+}
+
+func renderFile(n *html.Node) (FileContent, TextContent) {
+	var file FileContent
+	var text TextContent
 	for _, attr := range n.Attr {
 		if attr.Key != "src" {
 			continue
 		}
-		image = FileContent(fmt.Sprintf("<img src=%q>", attr.Val))
+		file = FileContent(attr.Val)
+		text = TextContent(fmt.Sprintf("<%v src=%q>", n.Data, attr.Val))
 	}
-	return image
+	return file, text
 }
 
 func renderTable(s *goquery.Selection) (*TableContent, error) {
