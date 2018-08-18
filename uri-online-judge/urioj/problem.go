@@ -32,6 +32,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/dedis/student_18/dgcosi/code/onet/log"
+	"github.com/lynn9388/supsub"
 	"github.com/tdewolff/minify"
 	html2 "github.com/tdewolff/minify/html"
 	"golang.org/x/net/html"
@@ -226,6 +227,10 @@ func renderParagraph(n *html.Node) []Content {
 
 		for c := n.FirstChild; c != nil; c = c.NextSibling {
 			switch c.Data {
+			case "sup":
+				textBuf.WriteString(supsub.ToSup(c.FirstChild.Data))
+			case "sub":
+				textBuf.WriteString(supsub.ToSub(c.FirstChild.Data))
 			case "br":
 				if textBuf.Len() != 0 {
 					content = append(content, TextContent(textBuf.String()))
