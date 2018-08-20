@@ -58,8 +58,11 @@ type Content interface {
 // TextContent is the plain text content
 type TextContent string
 
-//FileContent is the URL of file
-type FileContent string
+//FileContent is the URL and plain text presentation of a file
+type FileContent struct {
+	URL  string
+	Text string
+}
 
 // TableData is the content in a table cell
 type TableData []Content
@@ -93,11 +96,11 @@ func (t TextContent) empty() bool {
 }
 
 func (f FileContent) equal(c interface{}) bool {
-	return f == c.(FileContent)
+	return reflect.DeepEqual(f, c.(FileContent))
 }
 
 func (f FileContent) empty() bool {
-	return len(f) == 0
+	return len(f.URL) == 0
 }
 
 func (t TableContent) equal(c interface{}) bool {
@@ -253,9 +256,9 @@ func renderParagraph(n *html.Node) []Content {
 					content = append(content, TextContent(""))
 				}
 			case "img":
-				image, text := renderFile(c)
+				image := renderFile(c)
 				content = append(content, image)
-				textBuf.WriteString(processText(string(text)))
+				textBuf.WriteString(image.Text)
 			default:
 				f(c)
 			}
@@ -289,17 +292,16 @@ func removeEmptyContent(c []Content) []Content {
 	return c
 }
 
-func renderFile(n *html.Node) (FileContent, TextContent) {
+func renderFile(n *html.Node) FileContent {
 	var file FileContent
-	var text TextContent
 	for _, attr := range n.Attr {
 		if attr.Key != "src" {
 			continue
 		}
-		file = FileContent(attr.Val)
-		text = TextContent(fmt.Sprintf("<%v src=%q>", n.Data, attr.Val))
+		file.URL = attr.Val
+		file.Text = fmt.Sprintf("<%v src=%q>", n.Data, attr.Val)
 	}
-	return file, text
+	return file
 }
 
 func renderTable(s *goquery.Selection) (*TableContent, error) {

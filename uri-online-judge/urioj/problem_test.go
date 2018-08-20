@@ -32,7 +32,7 @@ var tests = []Problem{
 			TableData{TextContent("15\n-7")}, TableData{TextContent("X = 8")})},
 	},
 	{ID: 1015, URL: "https://www.urionlinejudge.com.br/judge/en/problems/view/1015", Name: "Distance Between Two Points",
-		Description: []Content{TextContent(`Read the four values corresponding to the x and y axes of two points in the plane, p1 (x1, y1) and p2 (x2, y2) and calculate the distance between them, showing four decimal places after the comma, according to the formula:`), FileContent(`https://urionlinejudge.r.worldssl.net/gallery/images/problems/UOJ_1015.png`), TextContent(`Distance = <img src="https://urionlinejudge.r.worldssl.net/gallery/images/problems/UOJ_1015.png">`)},
+		Description: []Content{TextContent(`Read the four values corresponding to the x and y axes of two points in the plane, p1 (x1, y1) and p2 (x2, y2) and calculate the distance between them, showing four decimal places after the comma, according to the formula:`), FileContent{URL: `https://urionlinejudge.r.worldssl.net/gallery/images/problems/UOJ_1015.png`, Text: `<img src="https://urionlinejudge.r.worldssl.net/gallery/images/problems/UOJ_1015.png">`}, TextContent(`Distance = <img src="https://urionlinejudge.r.worldssl.net/gallery/images/problems/UOJ_1015.png">`)},
 		Input:       []Content{TextContent(`The input file contains two lines of data. The first one contains two double values: x1 y1 and the second one also contains two double values with one digit after the decimal point: x2 y2.`)},
 		Output:      []Content{TextContent(`Calculate and print the distance value using the provided formula, with 4 digits after the decimal point.`)},
 		Sample: []Content{*generateTable([]string{"Input Sample", "Output Sample"},
