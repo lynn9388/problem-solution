@@ -58,15 +58,15 @@ var tests = []Problem{
 	},
 	{ID: 1239, URL: "https://www.urionlinejudge.com.br/judge/en/problems/view/1239", Name: "Bloggo Shortcuts",
 		Description: []Content{TextContent(`You are helping to develop a weblog-management system called bloggo. Although bloggo pushes all content to the front end of a website in HTML, not all content authors enjoy using HTML tags in their text. To make their lives easier, bloggo offers a simple syntax called shortcuts to achieve some HTML textual effects. Your job is to take a document written with shortcuts and translate it into proper HTML.`), TextContent(`One shortcut is used to make italicized text. HTML does this with the <i> and </i> tags, but in bloggo, an author can simply enclose a piece of text using two instances of the underscore character, '_'. Thus, where a content author writes`), TextContent(`  You _should_ see the baby elephant at the zoo!`), TextContent(`bloggo will publish the following instead.`), TextContent(`  You <i>should</i> see the baby elephant at the zoo!`), TextContent(`Another shortcut serves to render text in boldface, which HTML accomplishes with <b> and </b> tags. Bloggo lets content authors do the same with paired instances of the asterisk character, '*'. When a content author writes the text`), TextContent(`  Move it from *Receiving* to *Accounts Payable*.`), TextContent(`it will end up on the website as`), TextContent(`  Move it from <b>Receiving</b> to <b>Accounts Payable</b>.`)},
-		Input:       []Content{TextContent(`The input contains several test cases. Each test case is composed by one line that contais a string text, containing zero or more usages of the italic and boldface shortcuts. Each text is between 1 and 50 characters long, inclusive. The only characters allowed in text are the alphabetic characters 'a' to 'z' and 'A' to 'Z', the underscore '_', the asterisk '*', the space character, and the punctuation symbols ',', ';', '.', '!', '?', '-', '(', and ')'. The underscore '_' occurs in text an even number of times. The asterisk '*' occurs in text an even number of times. No substring of text enclosed by a balanced pair of underscores or by a balanced pair of asterisks may contain any further underscores or asterisks.\n\nThe end of input is determined by EOF.`)},
+		Input:       []Content{TextContent("The input contains several test cases. Each test case is composed by one line that contais a string text, containing zero or more usages of the italic and boldface shortcuts. Each text is between 1 and 50 characters long, inclusive. The only characters allowed in text are the alphabetic characters 'a' to 'z' and 'A' to 'Z', the underscore '_', the asterisk '*', the space character, and the punctuation symbols ',', ';', '.', '!', '?', '-', '(', and ')'. The underscore '_' occurs in text an even number of times. The asterisk '*' occurs in text an even number of times. No substring of text enclosed by a balanced pair of underscores or by a balanced pair of asterisks may contain any further underscores or asterisks.\n\nThe end of input is determined by EOF.")},
 		Output:      []Content{TextContent(`Translate each input text into HTML as demonstrated by the examples above (and below). To render a span of text in italics in HTML, you must start with the <i> tag and end with the </i> tag. For boldface text, start with <b> and end with </b>. Print one translated text per line at standard output.`)},
 		Sample: []Content{*generateTable([]string{"Sample Input", "Sample Output"},
-			TableData{TextContent(`You _should_ see the new walrus at the zoo!\nMove it from *Accounts Payable* to *Receiving*.\nI saw _Chelydra serpentina_ in *Centennial Park*.\n_ _ __ _ yabba dabba _ * dooooo * ****\n_now_I_know_*my*_ABC_next_time_*sing*it_with_me`)}, TableData{TextContent(`You <i>should</i> see the new walrus at the zoo!\nMove it from <b>Accounts Payable</b> to <b>Receiving</b>.\nI saw <i>Chelydra serpentina</i> in <b>Centennial Park</b>.\n<i> </i> <i></i> <i> yabba dabba </i> <b> dooooo </b> <b></b><b></b>\n<i>now</i>I<i>know</i><b>my</b><i>ABC</i>next<i>time</i><b>sing</b>it<i>with</i>me`)})},
+			TableData{TextContent("You _should_ see the new walrus at the zoo!\nMove it from *Accounts Payable* to *Receiving*.\nI saw _Chelydra serpentina_ in *Centennial Park*.\n_ _ __ _ yabba dabba _ * dooooo * ****\n_now_I_know_*my*_ABC_next_time_*sing*it_with_me")}, TableData{TextContent("You <i>should</i> see the new walrus at the zoo!\nMove it from <b>Accounts Payable</b> to <b>Receiving</b>.\nI saw <i>Chelydra serpentina</i> in <b>Centennial Park</b>.\n<i> </i> <i></i> <i> yabba dabba </i> <b> dooooo </b> <b></b><b></b>\n<i>now</i>I<i>know</i><b>my</b><i>ABC</i>next<i>time</i><b>sing</b>it<i>with</i>me")})},
 	},
 }
 
 func generateTable(head []string, data ...TableData) *TableContent {
-	t, _ := newTable(head, data...)
+	t, _ := newTable(head, data)
 	return t
 }
 
@@ -99,30 +99,6 @@ func TestSelector(t *testing.T) {
 		get := getHTML(d.Find(selector))
 		if get != expect {
 			t.Errorf("content of %q doesn't match:\nExpect: %v\n   Get: %v\n", selector, expect, get)
-		}
-	}
-}
-
-func TestFindWholeTable(t *testing.T) {
-	tests := map[int]struct {
-		selector string
-		numRow   int
-	}{
-		1001: {selector: sampleSelector, numRow: 3},
-		1048: {selector: "div.description table", numRow: 1},
-	}
-
-	for id, v := range tests {
-		d, err := getDocument(id)
-		if err != nil {
-			t.Fatal(err)
-		}
-		table, err := findWholeTable(d.Find(v.selector).First())
-		if err != nil {
-			t.Fatal(err)
-		}
-		if len(table.Nodes) != v.numRow {
-			t.Fatalf("row number of %v %q doesn't match:\nExpect: %v\n   Get: %v\n", id, v.selector, v.numRow, len(table.Nodes))
 		}
 	}
 }

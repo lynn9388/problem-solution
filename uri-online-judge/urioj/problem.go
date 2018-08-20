@@ -150,28 +150,6 @@ func getDocument(id int) (*goquery.Document, error) {
 	return goquery.NewDocumentFromReader(mr)
 }
 
-// findWholeTable finds the <table> elements right next to each other
-func findWholeTable(firstRow *goquery.Selection) (*goquery.Selection, error) {
-	if firstRow.Length() != 1 {
-		return nil, errors.New("firstRow is not one row: " + strconv.Itoa(firstRow.Length()))
-	}
-
-	if !firstRow.Is(tableSelector) {
-		return nil, errors.New("firstRow is not a table: " + getHTML(firstRow))
-	}
-
-	table := firstRow
-	c := firstRow.Parent().Children()
-	for i := c.IndexOfSelection(firstRow) + 1; i < c.Length(); i++ {
-		n := c.Eq(i)
-		if !n.Is(tableSelector) {
-			break
-		}
-		table = table.AddSelection(n)
-	}
-	return table, nil
-}
-
 func getURL(id int) string {
 	return "https://www.urionlinejudge.com.br/judge/en/problems/view/" + strconv.Itoa(id)
 }
@@ -181,15 +159,15 @@ func getName(d *goquery.Document) string {
 }
 
 func getDescription(d *goquery.Document) []Content {
-	return removeEmptyContent(getContent(d.Find(descriptionSelector)))
+	return getContent(d.Find(descriptionSelector))
 }
 
 func getInput(d *goquery.Document) []Content {
-	return removeEmptyContent(getContent(d.Find(inputSelector)))
+	return getContent(d.Find(inputSelector))
 }
 
 func getOutput(d *goquery.Document) []Content {
-	return removeEmptyContent(getContent(d.Find(outputSelector)))
+	return getContent(d.Find(outputSelector))
 }
 
 func getSample(d *goquery.Document) []Content {
@@ -197,79 +175,103 @@ func getSample(d *goquery.Document) []Content {
 }
 
 func getContent(s *goquery.Selection) []Content {
-	var content []Content
+	var cs []Content
+	var block []*html.Node
 
 	var f func(*goquery.Selection)
 	f = func(s *goquery.Selection) {
 		for i := 0; i < s.Length(); i++ {
-			n := s.Nodes[i]
-			switch n.Data {
-			case "p":
-				content = append(content, renderParagraph(n)...)
-			case "pre":
-				content = append(content, TextContent(strings.TrimRightFunc(n.FirstChild.Data, unicode.IsSpace)))
-			case "table":
-				table, err := findWholeTable(s.Eq(i))
-				if err != nil {
-					log.Fatal(err)
+			si := s.Eq(i)
+			ni := s.Get(i)
+			switch ni.Data {
+			case "div":
+				processBlock(block, cs)
+				c := si.Children()
+				for i := range c.Nodes {
+					f(c.Eq(i))
 				}
+			case "p":
+				processBlock(block, cs)
+				var ns []*html.Node
+				for c := ni.FirstChild; c != nil; c = c.NextSibling {
+					ns = append(ns, c)
+				}
+				cs = append(cs, renderParagraph(ns)...)
+			case "pre":
+				processBlock(block, cs)
+				cs = append(cs, TextContent(strings.TrimRightFunc(ni.FirstChild.Data, unicode.IsSpace)))
+			case "table":
+				processBlock(block, cs)
+				table := si
+				for i++; i < s.Length() && s.Eq(i).Is(tableSelector); i++ {
+					table = table.AddSelection(s.Eq(i))
+				}
+				i--
 				tableContent, err := renderTable(table)
 				if err != nil {
 					log.Fatal(err)
 				}
-				content = append(content, *tableContent)
-				i += len(tableContent.Data) - 1
+				cs = append(cs, *tableContent)
 			default:
-				c := s.Eq(i).Children()
-				for i := range c.Nodes {
-					f(c.Eq(i))
-				}
+				block = append(block, ni)
 			}
 		}
 	}
 	f(s)
-	return content
+	return cs
 }
 
-func renderParagraph(n *html.Node) []Content {
-	var content []Content
-	var textBuf bytes.Buffer
+func processBlock(block []*html.Node, cs []Content) {
+	if block == nil {
+		return
+	}
+	cs = append(cs, renderParagraph(block)...)
+	block = nil
+}
 
-	var f func(*html.Node)
-	f = func(n *html.Node) {
-		if n.Type == html.TextNode {
-			textBuf.WriteString(processText(n.Data))
-			return
-		}
+func renderParagraph(ns []*html.Node) []Content {
+	var cs []Content
+	var buf bytes.Buffer
 
-		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			switch c.Data {
-			case "sup":
-				textBuf.WriteString(supsub.ToSup(c.FirstChild.Data))
-			case "sub":
-				textBuf.WriteString(supsub.ToSub(c.FirstChild.Data))
-			case "br":
-				if textBuf.Len() != 0 {
-					content = append(content, TextContent(textBuf.String()))
-					textBuf.Reset()
-				} else {
-					content = append(content, TextContent(""))
-				}
-			case "img":
-				image := renderFile(c)
-				content = append(content, image)
-				textBuf.WriteString(image.Text)
-			default:
-				f(c)
+	for _, n := range ns {
+		for _, nc := range renderNode(n) {
+			switch nc.(type) {
+			case TextContent:
+				buf.WriteString(string(nc.(TextContent)))
+			case FileContent:
+				buf.WriteString(nc.(FileContent).Text)
+				cs = append(cs, nc)
 			}
 		}
 	}
 
-	f(n)
-	if textBuf.Len() != 0 {
-		content = append(content, TextContent(textBuf.String()))
+	if buf.Len() > 0 {
+		cs = append(cs, TextContent(strings.TrimSpace(buf.String())))
 	}
-	return content
+	return cs
+}
+
+func renderNode(n *html.Node) []Content {
+	var cs []Content
+	if n.Type == html.TextNode {
+		cs = append(cs, TextContent(processText(n.Data)))
+	} else {
+		switch n.Data {
+		case "sup":
+			cs = append(cs, TextContent(supsub.ToSup(processText(n.FirstChild.Data))))
+		case "sub":
+			cs = append(cs, TextContent(supsub.ToSub(processText(n.FirstChild.Data))))
+		case "br":
+			cs = append(cs, TextContent("\n"))
+		case "img":
+			cs = append(cs, renderFile(n))
+		default:
+			for c := n.FirstChild; c != nil; c = c.NextSibling {
+				cs = append(cs, renderNode(c)...)
+			}
+		}
+	}
+	return cs
 }
 
 func processText(s string) string {
@@ -281,15 +283,6 @@ func processText(s string) string {
 			return r
 		}
 	}, s)
-}
-
-func removeEmptyContent(c []Content) []Content {
-	for i := 0; i < len(c); i++ {
-		if c[i].empty() {
-			c = append(c[:i], c[i+1:]...)
-		}
-	}
-	return c
 }
 
 func renderFile(n *html.Node) FileContent {
@@ -315,13 +308,13 @@ func renderTable(s *goquery.Selection) (*TableContent, error) {
 
 	tdp := s.Find("tbody").Find("td").Find("p")
 	for _, n := range tdp.Nodes {
-		var td TableData
-		for _, c := range renderParagraph(n) {
-			td = append(td, c)
+		var ns []*html.Node
+		for c := n.FirstChild; c != nil; c = c.NextSibling {
+			ns = append(ns, c)
 		}
-		data = append(data, td)
+		data = append(data, renderParagraph(ns))
 	}
-	return newTable(head, data...)
+	return newTable(head, data)
 }
 
 func getHTML(s *goquery.Selection) string {
@@ -334,7 +327,7 @@ func getHTML(s *goquery.Selection) string {
 	return buf.String()
 }
 
-func newTable(head []string, data ...TableData) (*TableContent, error) {
+func newTable(head []string, data []TableData) (*TableContent, error) {
 	numColumn := len(head)
 	if len(data)%numColumn != 0 {
 		return nil, errors.New("number of table data is not enough: " + strconv.Itoa(len(data)))
