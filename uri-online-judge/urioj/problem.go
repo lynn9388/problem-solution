@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+// Package urioj parse html for problem page from RUI online judge
 package urioj
 
 import (
@@ -38,70 +39,85 @@ import (
 	"golang.org/x/net/html"
 )
 
+// Problem selectors.
 const (
-	nameSelector        = "div.header > h1"
-	descriptionSelector = "div.description"
-	inputSelector       = "div.input"
-	outputSelector      = "div.output"
-	tableSelector       = "table"
-	sampleSelector      = "div.problem > " + tableSelector
+	nameSelector        = "div.header > h1"     // selector for problem name
+	descriptionSelector = "div.description"     // selector for problem main description block
+	inputSelector       = "div.input"           // selector for problem input description block
+	outputSelector      = "div.output"          // selector for problem output description block
+	tableSelector       = "table"               // selector for table element
+	sampleSelector      = "div.problem > table" // selector for test sample block
 )
 
+// Content is the interface of presented content in page
 type Content interface {
-	Equal(interface{}) bool
-	Empty() bool
+	equal(interface{}) bool
+	empty() bool
 }
+
+// TextContent is the plain text content
 type TextContent string
+
+//FileContent is the URL of file
 type FileContent string
-type TableData []string
+
+// TableData is the content in a table cell
+type TableData []Content
+
+// TableRow is the content in a row of table
 type TableRow []TableData
+
+// TableContent is the content of a table
 type TableContent struct {
 	Head []string
 	Data []TableRow
 }
 
+// Problem is the description of a problem
 type Problem struct {
-	Id          int
-	URL         string
-	Name        string
-	Description []Content
-	Input       []Content
-	Output      []Content
-	Sample      []Content
+	ID          int       //Problem id
+	URL         string    //page URL
+	Name        string    //problem name
+	Description []Content //main description
+	Input       []Content //input description
+	Output      []Content //output description
+	Sample      []Content //test sample
 }
 
-func (t TextContent) Equal(c interface{}) bool {
+func (t TextContent) equal(c interface{}) bool {
 	return t == c.(TextContent)
 }
 
-func (t TextContent) Empty() bool {
+func (t TextContent) empty() bool {
 	return len(t) == 0
 }
 
-func (f FileContent) Equal(c interface{}) bool {
+func (f FileContent) equal(c interface{}) bool {
 	return f == c.(FileContent)
 }
 
-func (f FileContent) Empty() bool {
+func (f FileContent) empty() bool {
 	return len(f) == 0
 }
 
-func (t TableContent) Equal(c interface{}) bool {
+func (t TableContent) equal(c interface{}) bool {
 	return reflect.DeepEqual(t, c.(TableContent))
 }
 
-func (t TableContent) Empty() bool {
+func (t TableContent) empty() bool {
 	return len(t.Head) == 0
 }
 
+// NewProblem create a initialized problem based on the problem id. It returns
+// a error if the problem page is inaccessible.
 func NewProblem(id int) (*Problem, error) {
-	d, err := getDocument(getDescriptionUrl(id))
+	d, err := getDocument(id)
 	if err != nil {
 		return nil, err
 	}
 
 	p := Problem{
-		Id:          id,
+		ID:          id,
 		URL:         getURL(id),
 		Name:        getName(d),
 		Description: getDescription(d),
@@ -112,15 +128,12 @@ func NewProblem(id int) (*Problem, error) {
 	return &p, nil
 }
 
-func getDescriptionUrl(id int) string {
-	return "https://www.urionlinejudge.com.br/repository/UOJ_" + strconv.Itoa(id) + "_en.html"
-}
-
-func getDocument(rawurl string) (*goquery.Document, error) {
+// getDocument downloads the minimized problem page
+func getDocument(id int) (*goquery.Document, error) {
 	proxyURL, _ := url.Parse("socks5://localhost:1080")
 	tr := &http.Transport{Proxy: http.ProxyURL(proxyURL)}
 	client := &http.Client{Transport: tr, Timeout: 5 * time.Second}
-	res, err := client.Get(rawurl)
+	res, err := client.Get("https://www.urionlinejudge.com.br/repository/UOJ_" + strconv.Itoa(id) + "_en.html")
 
 	if err != nil {
 		return nil, err
@@ -134,6 +147,7 @@ func getDocument(rawurl string) (*goquery.Document, error) {
 	return goquery.NewDocumentFromReader(mr)
 }
 
+// findWholeTable finds the <table> elements right next to each other
 func findWholeTable(firstRow *goquery.Selection) (*goquery.Selection, error) {
 	if firstRow.Length() != 1 {
 		return nil, errors.New("firstRow is not one row: " + strconv.Itoa(firstRow.Length()))
@@ -268,7 +282,7 @@ func processText(s string) string {
 
 func removeEmptyContent(c []Content) []Content {
 	for i := 0; i < len(c); i++ {
-		if c[i].Empty() {
+		if c[i].empty() {
 			c = append(c[:i], c[i+1:]...)
 		}
 	}
@@ -301,7 +315,7 @@ func renderTable(s *goquery.Selection) (*TableContent, error) {
 	for _, n := range tdp.Nodes {
 		var td TableData
 		for _, c := range renderParagraph(n) {
-			td = append(td, string(c.(TextContent)))
+			td = append(td, c)
 		}
 		data = append(data, td)
 	}
