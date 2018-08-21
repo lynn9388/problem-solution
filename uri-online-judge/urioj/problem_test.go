@@ -18,6 +18,7 @@ package urioj
 
 import (
 	"fmt"
+	"strconv"
 	"testing"
 )
 
@@ -116,34 +117,38 @@ func TestSelector(t *testing.T) {
 
 func TestGetContent(t *testing.T) {
 	for _, p := range tests {
-		pp, err := NewProblem(p.ID)
-		if err != nil {
-			t.Fatalf(err.Error())
-		}
+		p := p
+		t.Run(strconv.Itoa(p.ID), func(t *testing.T) {
+			t.Parallel()
+			pp, err := NewProblem(p.ID)
+			if err != nil {
+				t.Fatalf(err.Error())
+			}
 
-		if p.URL != pp.URL {
-			t.Errorf("url of %v doesn't match:\nExpect: %v\n   Get: %v\n", p.ID, p.URL, pp.URL)
-		}
+			if p.URL != pp.URL {
+				t.Errorf("url of %v doesn't match:\nExpect: %v\n   Get: %v\n", p.ID, p.URL, pp.URL)
+			}
 
-		if p.Name != pp.Name {
-			t.Errorf("name of %v doesn't match:\nExpect: %v\n   Get: %v\n", p.ID, p.Name, pp.URL)
-		}
+			if p.Name != pp.Name {
+				t.Errorf("name of %v doesn't match:\nExpect: %v\n   Get: %v\n", p.ID, p.Name, pp.URL)
+			}
 
-		if err := checkContents(p.Description, pp.Description); err != nil {
-			t.Errorf("description of %v doesn't match:\n%v", p.ID, err)
-		}
+			if err := checkContents(p.Description, pp.Description); err != nil {
+				t.Errorf("description of %v doesn't match:\n%v", p.ID, err)
+			}
 
-		if err := checkContents(p.Input, pp.Input); err != nil {
-			t.Errorf("input of %v doesn't match:\n%v", p.ID, err)
-		}
+			if err := checkContents(p.Input, pp.Input); err != nil {
+				t.Errorf("input of %v doesn't match:\n%v", p.ID, err)
+			}
 
-		if err := checkContents(p.Output, pp.Output); err != nil {
-			t.Errorf("output of %v doesn't match:\n%v", p.ID, err)
-		}
+			if err := checkContents(p.Output, pp.Output); err != nil {
+				t.Errorf("output of %v doesn't match:\n%v", p.ID, err)
+			}
 
-		if err := checkContents(p.Sample, pp.Sample); err != nil {
-			t.Errorf("sample of %v doesn't match:\n%v", p.ID, err)
-		}
+			if err := checkContents(p.Sample, pp.Sample); err != nil {
+				t.Errorf("sample of %v doesn't match:\n%v", p.ID, err)
+			}
+		})
 	}
 }
 
