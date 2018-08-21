@@ -164,6 +164,16 @@ func getContent(s *goquery.Selection) []Content {
 	var cs []Content
 	var block []*html.Node
 
+	// processBlock processes content not in a html block element
+	// (like <p>, <pre>...) but will show content in a paragraph.
+	processBlock := func() {
+		if block == nil {
+			return
+		}
+		cs = append(cs, renderParagraph(block)...)
+		block = nil
+	}
+
 	var f func(*goquery.Selection)
 	f = func(s *goquery.Selection) {
 		for i := 0; i < s.Length(); i++ {
@@ -171,19 +181,19 @@ func getContent(s *goquery.Selection) []Content {
 			ni := s.Get(i)
 			switch ni.Data {
 			case "div":
-				processBlock(block, cs)
-				c := si.Children()
+				processBlock()
+				c := si.Contents()
 				for i := range c.Nodes {
 					f(c.Eq(i))
 				}
 			case "p":
-				processBlock(block, cs)
+				processBlock()
 				cs = append(cs, renderParagraph([]*html.Node{ni})...)
 			case "pre":
-				processBlock(block, cs)
+				processBlock()
 				cs = append(cs, TextContent(strings.TrimRightFunc(ni.FirstChild.Data, unicode.IsSpace)))
 			case "table":
-				processBlock(block, cs)
+				processBlock()
 				table := si
 				for i++; i < s.Length() && s.Eq(i).Is("table"); i++ {
 					table = table.AddSelection(s.Eq(i))
@@ -195,7 +205,7 @@ func getContent(s *goquery.Selection) []Content {
 				}
 				cs = append(cs, *tableContent)
 			case "ul":
-				processBlock(block, cs)
+				processBlock()
 				cs = append(cs, renderList(si.Find("li")))
 			default:
 				block = append(block, ni)
@@ -203,17 +213,9 @@ func getContent(s *goquery.Selection) []Content {
 		}
 	}
 	f(s)
-	return cs
-}
 
-// processBlock processes content not in a html block element (like <p>, <pre>...)
-// but will show content in a paragraph.
-func processBlock(block []*html.Node, cs []Content) {
-	if block == nil {
-		return
-	}
-	cs = append(cs, renderParagraph(block)...)
-	block = nil
+	processBlock()
+	return cs
 }
 
 // renderParagraph renders nodes as a whole paragraph.
@@ -233,8 +235,9 @@ func renderParagraph(ns []*html.Node) []Content {
 		}
 	}
 
-	if buf.Len() > 0 {
-		cs = append(cs, TextContent(strings.TrimSpace(buf.String())))
+	p := strings.TrimSpace(buf.String())
+	if len(p) > 0 {
+		cs = append(cs, TextContent(p))
 	}
 	return cs
 }
