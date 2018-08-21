@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-// Package urioj parse html for problem page from RUI online judge
+// Package urioj parse html for problem page from RUI online judge.
 package urioj
 
 import (
@@ -48,39 +48,39 @@ const (
 	sampleSelector      = "div.problem > table" // selector for test sample block
 )
 
-// Content is the interface of presented content in page
+// Content is the interface of presented content in page.
 type Content interface {
 	equal(interface{}) bool
 }
 
-// TextContent is the plain text content
+// TextContent is the plain text content.
 type TextContent string
 
-// FileContent is the URL and plain text presentation of a file
+// FileContent is the URL and plain text presentation of a file.
 type FileContent struct {
 	URL  string
 	Text string
 }
 
-// ListText is the plain text content of a list item
+// ListText is the plain text content of a list item.
 type ListText string
 
-// ListItem is the item in a list
+// ListItem is the item in a list.
 type ListItem []Content
 
-// ListContent is the content of a list
+// ListContent is the content of a list.
 type ListContent []ListItem
 
-// TableData is the content in a table cell
+// TableData is the content in a table cell.
 type TableData []Content
 
-// TableContent is the content of a table
+// TableContent is the content of a table.
 type TableContent struct {
 	Head []string
 	Data [][]TableData
 }
 
-// Problem is the description of a problem
+// Problem is the description of a problem.
 type Problem struct {
 	ID          int       //Problem id
 	URL         string    //page URL
@@ -117,7 +117,7 @@ func NewProblem(id int) (*Problem, error) {
 	return &p, nil
 }
 
-// getDocument downloads the minimized problem page
+// getDocument downloads the minimized problem page.
 func getDocument(id int) (*goquery.Document, error) {
 	proxyURL, _ := url.Parse("socks5://localhost:1080")
 	tr := &http.Transport{Proxy: http.ProxyURL(proxyURL)}
@@ -206,6 +206,8 @@ func getContent(s *goquery.Selection) []Content {
 	return cs
 }
 
+// processBlock processes content not in a html block element (like <p>, <pre>...)
+// but will show content in a paragraph.
 func processBlock(block []*html.Node, cs []Content) {
 	if block == nil {
 		return
@@ -214,6 +216,7 @@ func processBlock(block []*html.Node, cs []Content) {
 	block = nil
 }
 
+// renderParagraph renders nodes as a whole paragraph.
 func renderParagraph(ns []*html.Node) []Content {
 	var cs []Content
 	var buf bytes.Buffer
@@ -236,6 +239,7 @@ func renderParagraph(ns []*html.Node) []Content {
 	return cs
 }
 
+// renderNode renders a node (inline element) to correspond content representation.
 func renderNode(n *html.Node) []Content {
 	var cs []Content
 	if n.Type == html.TextNode {
@@ -259,6 +263,7 @@ func renderNode(n *html.Node) []Content {
 	return cs
 }
 
+// processText replaces all space runes to normal space.
 func processText(s string) string {
 	return strings.Map(func(r rune) rune {
 		switch {
@@ -270,6 +275,7 @@ func processText(s string) string {
 	}, s)
 }
 
+// renderFile renders a node that represents a file.
 func renderFile(n *html.Node) FileContent {
 	var file FileContent
 	for _, attr := range n.Attr {
@@ -282,6 +288,7 @@ func renderFile(n *html.Node) FileContent {
 	return file
 }
 
+// renderTable renders a selection of <table> elements to a table.
 func renderTable(tables *goquery.Selection) (*TableContent, error) {
 	var head []string
 	var data []TableData
@@ -298,6 +305,7 @@ func renderTable(tables *goquery.Selection) (*TableContent, error) {
 	return newTable(head, data)
 }
 
+// renderList renders a selection of <li> elements to a list.
 func renderList(lis *goquery.Selection) ListContent {
 	var list ListContent
 	for _, n := range lis.Nodes {
@@ -312,6 +320,7 @@ func renderList(lis *goquery.Selection) ListContent {
 	return list
 }
 
+// getHTML generates raw html of a selection.
 func getHTML(s *goquery.Selection) string {
 	var buf bytes.Buffer
 	for _, n := range s.Nodes {
@@ -322,6 +331,7 @@ func getHTML(s *goquery.Selection) string {
 	return buf.String()
 }
 
+// newTable creates a table without create every row's data.
 func newTable(head []string, data []TableData) (*TableContent, error) {
 	numColumn := len(head)
 	if len(data)%numColumn != 0 {
