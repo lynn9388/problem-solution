@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-// Package urioj parse html for problem page from URI Online Judge.
+// Package urioj parses html for problem page from URI Online Judge.
 // https://www.urionlinejudge.com.br
 package urioj
 
