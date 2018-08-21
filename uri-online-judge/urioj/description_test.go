@@ -17,6 +17,10 @@
 package urioj
 
 import (
+	"fmt"
+	"io/ioutil"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/sergi/go-diff/diffmatchpatch"
@@ -144,5 +148,41 @@ func TestNewDescriptionFile(t *testing.T) {
 	err := NewDescriptionFile(1015, "test/main.go")
 	if err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestDescriptions(t *testing.T) {
+	files, err := ioutil.ReadDir("../")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, f := range files {
+		if f.IsDir() {
+			id, err := strconv.Atoi(strings.Split(f.Name(), " ")[0])
+			if err != nil {
+				continue
+			}
+
+			content, err := ioutil.ReadFile("../" + f.Name() + "/main.go")
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			expect := strings.TrimSpace(strings.Split(string(content), "\npackage main")[0])
+
+			get, err := NewDescription(id)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if expect != get {
+				dmp := diffmatchpatch.New()
+				diffs := dmp.DiffMain(get, expect, false)
+				fmt.Println(dmp.DiffPrettyText(diffs))
+				t.Fail()
+			}
+
+		}
 	}
 }
