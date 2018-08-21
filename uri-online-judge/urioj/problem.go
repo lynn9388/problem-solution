@@ -51,28 +51,33 @@ const (
 // Content is the interface of presented content in page
 type Content interface {
 	equal(interface{}) bool
-	empty() bool
 }
 
 // TextContent is the plain text content
 type TextContent string
 
-//FileContent is the URL and plain text presentation of a file
+// FileContent is the URL and plain text presentation of a file
 type FileContent struct {
 	URL  string
 	Text string
 }
 
+// ListText is the plain text content of a list item
+type ListText string
+
+// ListItem is the item in a list
+type ListItem []Content
+
+// ListContent is the content of a list
+type ListContent []ListItem
+
 // TableData is the content in a table cell
 type TableData []Content
-
-// TableRow is the content in a row of table
-type TableRow []TableData
 
 // TableContent is the content of a table
 type TableContent struct {
 	Head []string
-	Data []TableRow
+	Data [][]TableData
 }
 
 // Problem is the description of a problem
@@ -86,29 +91,11 @@ type Problem struct {
 	Sample      []Content //test sample
 }
 
-func (t TextContent) equal(c interface{}) bool {
-	return t == c.(TextContent)
-}
-
-func (t TextContent) empty() bool {
-	return len(t) == 0
-}
-
-func (f FileContent) equal(c interface{}) bool {
-	return reflect.DeepEqual(f, c.(FileContent))
-}
-
-func (f FileContent) empty() bool {
-	return len(f.URL) == 0
-}
-
-func (t TableContent) equal(c interface{}) bool {
-	return reflect.DeepEqual(t, c.(TableContent))
-}
-
-func (t TableContent) empty() bool {
-	return len(t.Head) == 0
-}
+func (t TextContent) equal(c interface{}) bool  { return t == c.(TextContent) }
+func (f FileContent) equal(c interface{}) bool  { return reflect.DeepEqual(f, c.(FileContent)) }
+func (l ListText) equal(c interface{}) bool     { return l == c.(ListText) }
+func (l ListContent) equal(c interface{}) bool  { return reflect.DeepEqual(l, c.(ListContent)) }
+func (t TableContent) equal(c interface{}) bool { return reflect.DeepEqual(t, c.(TableContent)) }
 
 // NewProblem create a initialized problem based on the problem id. It returns
 // a error if the problem page is inaccessible.
@@ -209,7 +196,7 @@ func getContent(s *goquery.Selection) []Content {
 				cs = append(cs, *tableContent)
 			case "ul":
 				processBlock(block, cs)
-				cs = append(cs, renderList(si.Find("li"))...)
+				cs = append(cs, renderList(si.Find("li")))
 			default:
 				block = append(block, ni)
 			}
@@ -311,25 +298,18 @@ func renderTable(tables *goquery.Selection) (*TableContent, error) {
 	return newTable(head, data)
 }
 
-func renderList(lis *goquery.Selection) []Content {
-	var cs []Content
-	var buf bytes.Buffer
-
+func renderList(lis *goquery.Selection) ListContent {
+	var list ListContent
 	for _, n := range lis.Nodes {
-		csn := renderParagraph([]*html.Node{n})
-		for _, c := range csn {
-			switch c.(type) {
-			case TextContent:
-				buf.WriteString(" • " + string(c.(TextContent)) + "\n")
-			default:
-				cs = append(cs, c)
+		cs := renderParagraph([]*html.Node{n})
+		for i := 0; i < len(cs); i++ {
+			if v, ok := cs[i].(TextContent); ok {
+				cs = append(cs[:i], append([]Content{ListText(v)}, cs[i+1:]...)...)
 			}
 		}
+		list = append(list, cs)
 	}
-	if buf.Len() > 0 {
-		cs = append(cs, TextContent(strings.TrimRightFunc(buf.String(), unicode.IsSpace)))
-	}
-	return cs
+	return list
 }
 
 func getHTML(s *goquery.Selection) string {
