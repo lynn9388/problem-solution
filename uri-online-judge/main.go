@@ -38,5 +38,11 @@ func main() {
 		if err := urioj.NewDescriptionFile(id, path); err != nil {
 			log.Error(err)
 		}
+
+		description, err := urioj.NewDescription(id)
+		if err != nil {
+			log.Error(err)
+		}
+		fmt.Println(description)
 	}
 }
