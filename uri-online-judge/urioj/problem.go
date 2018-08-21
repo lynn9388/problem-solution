@@ -45,7 +45,6 @@ const (
 	descriptionSelector = "div.description"     // selector for problem main description block
 	inputSelector       = "div.input"           // selector for problem input description block
 	outputSelector      = "div.output"          // selector for problem output description block
-	tableSelector       = "table"               // selector for table element
 	sampleSelector      = "div.problem > table" // selector for test sample block
 )
 
@@ -192,18 +191,14 @@ func getContent(s *goquery.Selection) []Content {
 				}
 			case "p":
 				processBlock(block, cs)
-				var ns []*html.Node
-				for c := ni.FirstChild; c != nil; c = c.NextSibling {
-					ns = append(ns, c)
-				}
-				cs = append(cs, renderParagraph(ns)...)
+				cs = append(cs, renderParagraph([]*html.Node{ni})...)
 			case "pre":
 				processBlock(block, cs)
 				cs = append(cs, TextContent(strings.TrimRightFunc(ni.FirstChild.Data, unicode.IsSpace)))
 			case "table":
 				processBlock(block, cs)
 				table := si
-				for i++; i < s.Length() && s.Eq(i).Is(tableSelector); i++ {
+				for i++; i < s.Length() && s.Eq(i).Is("table"); i++ {
 					table = table.AddSelection(s.Eq(i))
 				}
 				i--
@@ -212,6 +207,9 @@ func getContent(s *goquery.Selection) []Content {
 					log.Fatal(err)
 				}
 				cs = append(cs, *tableContent)
+			case "ul":
+				processBlock(block, cs)
+				cs = append(cs, renderList(si.Find("li"))...)
 			default:
 				block = append(block, ni)
 			}
@@ -297,24 +295,41 @@ func renderFile(n *html.Node) FileContent {
 	return file
 }
 
-func renderTable(s *goquery.Selection) (*TableContent, error) {
+func renderTable(tables *goquery.Selection) (*TableContent, error) {
 	var head []string
 	var data []TableData
 
-	th := s.Find("thead").Find("td")
+	th := tables.Find("thead").Find("td")
 	for i := range th.Nodes {
 		head = append(head, th.Eq(i).Text())
 	}
 
-	tdp := s.Find("tbody").Find("td").Find("p")
+	tdp := tables.Find("tbody").Find("td").Find("p")
 	for _, n := range tdp.Nodes {
-		var ns []*html.Node
-		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			ns = append(ns, c)
-		}
-		data = append(data, renderParagraph(ns))
+		data = append(data, renderParagraph([]*html.Node{n}))
 	}
 	return newTable(head, data)
+}
+
+func renderList(lis *goquery.Selection) []Content {
+	var cs []Content
+	var buf bytes.Buffer
+
+	for _, n := range lis.Nodes {
+		csn := renderParagraph([]*html.Node{n})
+		for _, c := range csn {
+			switch c.(type) {
+			case TextContent:
+				buf.WriteString(" • " + string(c.(TextContent)) + "\n")
+			default:
+				cs = append(cs, c)
+			}
+		}
+	}
+	if buf.Len() > 0 {
+		cs = append(cs, TextContent(strings.TrimRightFunc(buf.String(), unicode.IsSpace)))
+	}
+	return cs
 }
 
 func getHTML(s *goquery.Selection) string {
