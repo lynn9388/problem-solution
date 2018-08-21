@@ -15,7 +15,7 @@ Output
 Print the relative message to the input as stated above.
 
 +--------------+-------------------+
-| SAMPLE INPUT |   SAMPLE OUTPUT   |
+| INPUT SAMPLE |   OUTPUT SAMPLE   |
 +--------------+-------------------+
 | 6 24         | Sao Multiplos     |
 +--------------+-------------------+

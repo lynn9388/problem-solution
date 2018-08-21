@@ -22,7 +22,7 @@ Print how many liters would be needed to do this trip, with three
 digits after the decimal point.
 
 +--------------+---------------+
-| SAMPLE INPUT | SAMPLE OUTPUT |
+| INPUT SAMPLE | OUTPUT SAMPLE |
 +--------------+---------------+
 | 10           | 70.833        |
 | 85           |               |

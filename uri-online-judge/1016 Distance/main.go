@@ -19,11 +19,11 @@ The input file contains 1 integer value.
 
 Output
 ******
-Print the necessary time followed by the message " minutos" that means
+Print the necessary time followed by the message "minutos" that means
 minutes in Portuguese.
 
 +--------------+---------------+
-| SAMPLE INPUT | SAMPLE OUTPUT |
+| INPUT SAMPLE | OUTPUT SAMPLE |
 +--------------+---------------+
 | 30           | 60 minutos    |
 +--------------+---------------+

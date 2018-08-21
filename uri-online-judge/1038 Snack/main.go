@@ -19,7 +19,7 @@ The output must be a message "Total: R$ " followed by the total value
 to be paid, with 2 digits after the decimal point.
 
 +--------------+-----------------+
-| SAMPLE INPUT |  SAMPLE OUTPUT  |
+| INPUT SAMPLE |  OUTPUT SAMPLE  |
 +--------------+-----------------+
 | 3 2          | Total: R$ 10.00 |
 +--------------+-----------------+

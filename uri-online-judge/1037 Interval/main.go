@@ -21,7 +21,7 @@ Output
 The output must be a message like following example.
 
 +--------------+--------------------+
-| SAMPLE INPUT |   SAMPLE OUTPUT    |
+| INPUT SAMPLE |   OUTPUT SAMPLE    |
 +--------------+--------------------+
 | 25.01        | Intervalo (25,50]  |
 +--------------+--------------------+

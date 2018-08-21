@@ -14,10 +14,10 @@ Four integer numbers A, B, C and D.
 
 Output
 ******
-Show the corresponding message after the validation of the values.
+Show the corresponding message after the validation of the values​​.
 
 +--------------+---------------------+
-| SAMPLE INPUT |    SAMPLE OUTPUT    |
+| INPUT SAMPLE |    OUTPUT SAMPLE    |
 +--------------+---------------------+
 | 5 6 7 8      | Valores nao aceitos |
 +--------------+---------------------+

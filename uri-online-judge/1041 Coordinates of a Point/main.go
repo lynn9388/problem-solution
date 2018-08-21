@@ -23,7 +23,7 @@ Output
 The output should display the quadrant in which the point is.
 
 +--------------+---------------+
-| SAMPLE INPUT | SAMPLE OUTPUT |
+| INPUT SAMPLE | OUTPUT SAMPLE |
 +--------------+---------------+
 | 4.5 -2.2     | Q4            |
 +--------------+---------------+

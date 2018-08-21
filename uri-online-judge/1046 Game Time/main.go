@@ -17,7 +17,7 @@ Output
 Print the duration of the game as in the sample output.
 
 +--------------+-------------------------+
-| SAMPLE INPUT |      SAMPLE OUTPUT      |
+| INPUT SAMPLE |      OUTPUT SAMPLE      |
 +--------------+-------------------------+
 | 16 2         | O JOGO DUROU 10 HORA(S) |
 +--------------+-------------------------+

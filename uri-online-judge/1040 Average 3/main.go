@@ -2,7 +2,7 @@
                               Average 3
     https://www.urionlinejudge.com.br/judge/en/problems/view/1040
 
-Read four numbers (N1, N2, N3, N4), which one with 1 digit after the
+Read four numbers (N₁, N₂, N₃, N₄), which one with 1 digit after the
 decimal point, corresponding to 4 scores obtained by a student. Calculate
 the average with weights 2, 3, 4 e 1 respectively, for these 4 scores
 and print the message "Media: " (Average), followed by the calculated
@@ -30,21 +30,21 @@ Output
 ******
 Print all the answers with one digit after the decimal point.
 
-+--------------------+--------------------------------+
-|    SAMPLE INPUT    |         SAMPLE OUTPUT          |
-+--------------------+--------------------------------+
-| 2.0 4.0 7.5 8.0    | Media: 5.4                     |
-| 6.4                | Aluno em exame.                |
-|                    | Nota do exame: 6.4             |
-|                    | Aluno aprovado.                |
-|                    | Media final: 5.9               |
-+--------------------+--------------------------------+
-| 2.0 6.5 4.0 9.0    | Media: 4.8                     |
-|                    | Aluno reprovado.               |
-+--------------------+--------------------------------+
-| 9.0 4.0 8.5 9.0    | Media: 7.3                     |
-|                    | Aluno aprovado.                |
-+--------------------+--------------------------------+
++-----------------+--------------------+
+|  INPUT SAMPLE   |   OUTPUT SAMPLE    |
++-----------------+--------------------+
+| 2.0 4.0 7.5 8.0 | Media: 5.4         |
+| 6.4             | Aluno em exame.    |
+|                 | Nota do exame: 6.4 |
+|                 | Aluno aprovado.    |
+|                 | Media final: 5.9   |
++-----------------+--------------------+
+| 2.0 6.5 4.0 9.0 | Media: 4.8         |
+|                 | Aluno reprovado.   |
++-----------------+--------------------+
+| 9.0 4.0 8.5 9.0 | Media: 7.3         |
+|                 | Aluno aprovado.    |
++-----------------+--------------------+
 *********************************************************************/
 
 package main

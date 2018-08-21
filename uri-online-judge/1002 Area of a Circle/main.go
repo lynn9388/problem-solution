@@ -3,7 +3,7 @@
     https://www.urionlinejudge.com.br/judge/en/problems/view/1002
 
 The formula to calculate the area of a circumference is defined as A =
-π . R^2. Considering to this problem that π = 3.14159:
+π . R². Considering to this problem that π = 3.14159:
 
 Calculate the area using the formula given in the problem description.
 
@@ -20,15 +20,15 @@ double precision variables. Like all the problems, don't forget to
 print the end of line after the result, otherwise you will receive
 "Presentation Error".
 
-+--------------+---------------+
-| SAMPLE INPUT | SAMPLE OUTPUT |
-+--------------+---------------+
-| 2.00         | A=12.5664     |
-+--------------+---------------+
-| 100.64       | A=31819.3103  |
-+--------------+---------------+
-| 150.00       | A=70685.7750  |
-+--------------+---------------+
++---------------+----------------+
+| INPUT SAMPLES | OUTPUT SAMPLES |
++---------------+----------------+
+| 2.00          | A=12.5664      |
++---------------+----------------+
+| 100.64        | A=31819.3103   |
++---------------+----------------+
+| 150.00        | A=70685.7750   |
++---------------+----------------+
 *********************************************************************/
 
 package main

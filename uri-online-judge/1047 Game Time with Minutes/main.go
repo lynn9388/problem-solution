@@ -21,7 +21,7 @@ Print the duration of the game in hours and minutes, in this format:
 lasted XXX hour(s) and YYY minutes.
 
 +--------------+---------------------------------------+
-| SAMPLE INPUT |             SAMPLE OUTPUT             |
+| INPUT SAMPLE |             OUTPUT SAMPLE             |
 +--------------+---------------------------------------+
 | 7 8 9 10     | O JOGO DUROU 2 HORA(S) E 2 MINUTO(S)  |
 +--------------+---------------------------------------+

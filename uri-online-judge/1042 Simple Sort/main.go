@@ -15,7 +15,7 @@ Output
 Present the output as requested above.
 
 +--------------+---------------+
-| SAMPLE INPUT | SAMPLE OUTPUT |
+| INPUT SAMPLE | OUTPUT SAMPLE |
 +--------------+---------------+
 | 7 21 -14     | -14           |
 |              | 7             |

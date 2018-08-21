@@ -17,18 +17,18 @@ space before and after the equal signal followed by the corresponding
 value to the sum of A and B. Like all the problems, don't forget to
 print the end of line, otherwise you will receive "Presentation Error"
 
-+--------------+---------------+
-| SAMPLE INPUT | SAMPLE OUTPUT |
-+--------------+---------------+
-| 30           | SOMA = 40     |
-| 10           |               |
-+--------------+---------------+
-| -30          | SOMA = -20    |
-| 10           |               |
-+--------------+---------------+
-| 0            | SOMA = 0      |
-| 0            |               |
-+--------------+---------------+
++---------------+----------------+
+| INPUT SAMPLES | OUTPUT SAMPLES |
++---------------+----------------+
+| 30            | SOMA = 40      |
+| 10            |                |
++---------------+----------------+
+| -30           | SOMA = -20     |
+| 10            |                |
++---------------+----------------+
+| 0             | SOMA = 0       |
+| 0             |                |
++---------------+----------------+
 *********************************************************************/
 
 package main

@@ -15,7 +15,7 @@ Print the read time in the input file (seconds) converted in
 hours:minutes:seconds like the following example.
 
 +--------------+---------------+
-| SAMPLE INPUT | SAMPLE OUTPUT |
+| INPUT SAMPLE | OUTPUT SAMPLE |
 +--------------+---------------+
 | 556          | 0:9:16        |
 +--------------+---------------+

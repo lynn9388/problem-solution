@@ -22,7 +22,7 @@ Output
 Print the result with one digit after the decimal point.
 
 +--------------+------------------+
-| SAMPLE INPUT |  SAMPLE OUTPUT   |
+| INPUT SAMPLE |  OUTPUT SAMPLE   |
 +--------------+------------------+
 | 6.0 4.0 2.0  | Area = 10.0      |
 +--------------+------------------+
