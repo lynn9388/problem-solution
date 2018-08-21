@@ -1,13 +1,18 @@
 # problem-solution
+
 Solutions for programming puzzles.
 
-## urioj
+## A Tour of Go
+
+Exercise solutions for [A Tour of Go](https://tour.golang.org/).
+
+## URI Online Judge
 
 [![GoDoc](https://godoc.org/github.com/lynn9388/problem-solution/urioj?status.svg)](https://godoc.org/github.com/lynn9388/problem-solution/urioj)
 
 Package urioj parses html for problem page from [URI Online Judge](https://www.urionlinejudge.com.br/). It can format html page to plain text and download relative files.
 
-For example ([Problem 1048](https://www.urionlinejudge.com.br/judge/en/problems/view/1045)):
+For example ([Problem 1045](https://www.urionlinejudge.com.br/judge/en/problems/view/1045)):
 
 ```go
 d, _ := NewDescription(1045)
@@ -62,5 +67,3 @@ Print all the classifications of the triangle presented in the input.
 +---------------+-----------------------+
 *********************************************************************/
 ```
-
-
