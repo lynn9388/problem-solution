@@ -158,31 +158,34 @@ func TestDescriptions(t *testing.T) {
 	}
 
 	for _, f := range files {
-		if f.IsDir() {
-			id, err := strconv.Atoi(strings.Split(f.Name(), " ")[0])
-			if err != nil {
-				continue
+		f := f
+		t.Run(f.Name(), func(t *testing.T) {
+			t.Parallel()
+			if f.IsDir() {
+				id, err := strconv.Atoi(strings.Split(f.Name(), " ")[0])
+				if err != nil {
+					return
+				}
+
+				content, err := ioutil.ReadFile("../uri-online-judge/" + f.Name() + "/main.go")
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				expect := strings.TrimSpace(strings.Split(string(content), "\npackage main")[0])
+
+				get, err := NewDescription(id)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				if expect != get {
+					dmp := diffmatchpatch.New()
+					diffs := dmp.DiffMain(get, expect, false)
+					fmt.Println(dmp.DiffPrettyText(diffs))
+					t.Fail()
+				}
 			}
-
-			content, err := ioutil.ReadFile("../uri-online-judge/" + f.Name() + "/main.go")
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			expect := strings.TrimSpace(strings.Split(string(content), "\npackage main")[0])
-
-			get, err := NewDescription(id)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			if expect != get {
-				dmp := diffmatchpatch.New()
-				diffs := dmp.DiffMain(get, expect, false)
-				fmt.Println(dmp.DiffPrettyText(diffs))
-				t.Fail()
-			}
-
-		}
+		})
 	}
 }
