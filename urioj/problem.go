@@ -25,10 +25,8 @@ import (
 	"net/url"
 	"reflect"
 	"strconv"
-	"time"
-
 	"strings"
-
+	"time"
 	"unicode"
 
 	"github.com/PuerkitoBio/goquery"

@@ -20,7 +20,7 @@ import (
 	"fmt"
 
 	"github.com/dedis/student_18/dgcosi/code/onet/log"
-	"github.com/lynn9388/problem-solution/uri-online-judge/urioj"
+	"github.com/lynn9388/problem-solution/urioj"
 )
 
 func main() {

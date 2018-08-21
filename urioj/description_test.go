@@ -152,7 +152,7 @@ func TestNewDescriptionFile(t *testing.T) {
 }
 
 func TestDescriptions(t *testing.T) {
-	files, err := ioutil.ReadDir("../")
+	files, err := ioutil.ReadDir("../uri-online-judge")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -164,7 +164,7 @@ func TestDescriptions(t *testing.T) {
 				continue
 			}
 
-			content, err := ioutil.ReadFile("../" + f.Name() + "/main.go")
+			content, err := ioutil.ReadFile("../uri-online-judge/" + f.Name() + "/main.go")
 			if err != nil {
 				t.Fatal(err)
 			}
