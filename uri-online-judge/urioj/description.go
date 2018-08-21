@@ -18,6 +18,13 @@ package urioj
 
 import (
 	"bytes"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"path"
+	"path/filepath"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -45,11 +52,13 @@ PROBLEM-OUTPUT
 PROBLEM-SAMPLE
 ` + strings.Repeat("*", lineWidth-1) + "/"
 
-// NewDescription render a problem to plain text comment
-func NewDescription(id int) string {
+var dir = "."
+
+// NewDescription render a problem to plain text comment.
+func NewDescription(id int) (string, error) {
 	p, err := NewProblem(id)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 
 	description := strings.Replace(description, "PROBLEM-NAME", alignCenter(p.Name), 1)
@@ -59,7 +68,33 @@ func NewDescription(id int) string {
 	description = strings.Replace(description, "PROBLEM-OUTPUT", processContent(p.Output), 1)
 	description = strings.Replace(description, "PROBLEM-SAMPLE", processContent(p.Sample), 1)
 
-	return description
+	return description, nil
+}
+
+// NewDescriptionFile creates a description file of a problem in a folder with
+// relative resources (like images).
+func NewDescriptionFile(id int, path string) error {
+	dir = filepath.Dir(path)
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		if err := os.MkdirAll(dir, 0777); err != nil {
+			return err
+		}
+	}
+
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		description, err := NewDescription(id)
+		if err != nil {
+			return err
+		}
+
+		if err := ioutil.WriteFile(path, []byte(description), 0664); err != nil {
+			return err
+		}
+	} else {
+		return fmt.Errorf("file already exists: %v", path)
+	}
+
+	return nil
 }
 
 // processContent processes content with correspond behavior (likes download image)
@@ -82,6 +117,8 @@ func processContent(cs []Content) string {
 			}
 			buf.WriteString("\n")
 		case FileContent:
+			url := c.(FileContent).URL
+			downloadFile(dir+"/"+path.Base(url), url)
 		case TableContent:
 			buf.WriteString(tableToText(c.(TableContent)) + "\n")
 		}
@@ -163,4 +200,21 @@ func tableToText(t TableContent) string {
 
 	table.Render()
 	return buf.String()
+}
+
+// downloadFile downloads a file
+func downloadFile(path string, url string) {
+	out, err := os.Create(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer out.Close()
+
+	resp, err := http.Get(url)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+
+	io.Copy(out, resp.Body)
 }
