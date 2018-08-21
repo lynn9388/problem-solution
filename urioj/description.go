@@ -72,7 +72,8 @@ func NewDescription(id int) (string, error) {
 }
 
 // NewDescriptionFile creates a description file of a problem in a folder with
-// relative resources (like images).
+// relative resources (like images). Default directory to save file will be
+// updated at the same time
 func NewDescriptionFile(id int, path string) error {
 	dir = filepath.Dir(path)
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
