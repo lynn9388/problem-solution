@@ -9,14 +9,15 @@ Exercise solutions for [A Tour of Go](https://tour.golang.org/).
 ## URI Online Judge
 
 [![GoDoc](https://godoc.org/github.com/lynn9388/problem-solution/urioj?status.svg)](https://godoc.org/github.com/lynn9388/problem-solution/urioj)
+[![Build Status](https://travis-ci.com/lynn9388/problem-solution.svg?branch=master)](https://travis-ci.com/lynn9388/problem-solution)
 
-Package urioj parses html for problem page from [URI Online Judge](https://www.urionlinejudge.com.br/). It can format html page to plain text and download relative files.
+Package urioj parses html for problem page from [URI Online Judge](https://www.urionlinejudge.com.br/). It can format a problem to plain text and download relative files.
 
 For example ([Problem 1045](https://www.urionlinejudge.com.br/judge/en/problems/view/1045)):
 
 ```go
-d, _ := NewDescription(1045)
-fmt.Println(d)
+p, _ := NewProblem(1045)
+fmt.Println(p)
 ```
 
 Output:
