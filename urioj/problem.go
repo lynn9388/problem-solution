@@ -23,7 +23,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/url"
 	"reflect"
 	"strconv"
 	"strings"
@@ -118,9 +117,7 @@ func NewProblem(id int) (*Problem, error) {
 
 // getDocument downloads the minimized problem page.
 func getDocument(id int) (*goquery.Document, error) {
-	proxyURL, _ := url.Parse("socks5://localhost:1080")
-	tr := &http.Transport{Proxy: http.ProxyURL(proxyURL)}
-	client := &http.Client{Transport: tr, Timeout: 5 * time.Second}
+	client := &http.Client{Timeout: 5 * time.Second}
 	res, err := client.Get("https://www.urionlinejudge.com.br/repository/UOJ_" + strconv.Itoa(id) + "_en.html")
 
 	if err != nil {
