@@ -106,12 +106,12 @@ func NewProblem(id int) (*Problem, error) {
 
 	p := Problem{
 		ID:          id,
-		URL:         getURL(id),
-		Name:        getName(d),
-		Description: getDescription(d),
-		Input:       getInput(d),
-		Output:      getOutput(d),
-		Sample:      getSample(d),
+		URL:         "https://www.urionlinejudge.com.br/judge/en/problems/view/" + strconv.Itoa(id),
+		Name:        d.Find(nameSelector).Text(),
+		Description: getContent(d.Find(descriptionSelector)),
+		Input:       getContent(d.Find(inputSelector)),
+		Output:      getContent(d.Find(outputSelector)),
+		Sample:      getContent(d.Find(sampleSelector)),
 	}
 	return &p, nil
 }
@@ -133,30 +133,6 @@ func getDocument(id int) (*goquery.Document, error) {
 	mr := m.Reader("text/html", res.Body)
 
 	return goquery.NewDocumentFromReader(mr)
-}
-
-func getURL(id int) string {
-	return "https://www.urionlinejudge.com.br/judge/en/problems/view/" + strconv.Itoa(id)
-}
-
-func getName(d *goquery.Document) string {
-	return d.Find(nameSelector).Text()
-}
-
-func getDescription(d *goquery.Document) []Content {
-	return getContent(d.Find(descriptionSelector))
-}
-
-func getInput(d *goquery.Document) []Content {
-	return getContent(d.Find(inputSelector))
-}
-
-func getOutput(d *goquery.Document) []Content {
-	return getContent(d.Find(outputSelector))
-}
-
-func getSample(d *goquery.Document) []Content {
-	return getContent(d.Find(sampleSelector))
 }
 
 func getContent(s *goquery.Selection) []Content {
