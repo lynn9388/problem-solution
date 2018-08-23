@@ -18,8 +18,11 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+	"path/filepath"
 
-	"github.com/dedis/student_18/dgcosi/code/onet/log"
 	"github.com/lynn9388/problem-solution/urioj"
 )
 
@@ -31,18 +34,33 @@ func main() {
 
 		p, err := urioj.NewProblem(id)
 		if err != nil {
-			log.Error(err)
+			log.Print(err)
+			continue
 		}
+		fmt.Println(p)
 
 		path := fmt.Sprintf("%v %v/main.go", p.ID, p.Name)
-		if err := urioj.NewDescriptionFile(id, path); err != nil {
-			log.Error(err)
+		if err := newSourceFile(p.String(), path); err != nil {
+			log.Print(err)
 		}
-
-		description, err := urioj.NewDescription(id)
-		if err != nil {
-			log.Error(err)
-		}
-		fmt.Println(description)
 	}
+}
+
+func newSourceFile(content string, path string) error {
+	dir := filepath.Dir(path)
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		if err := os.MkdirAll(dir, 0777); err != nil {
+			return err
+		}
+	}
+
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		if err := ioutil.WriteFile(path, []byte(content), 0664); err != nil {
+			return err
+		}
+	} else {
+		return fmt.Errorf("file already exists: %v", path)
+	}
+
+	return nil
 }

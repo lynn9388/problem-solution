@@ -129,25 +129,19 @@ Em percentual: means "In percentage"
 *********************************************************************/`,
 }
 
-func TestNewDescription(t *testing.T) {
+func TestProblem_String(t *testing.T) {
 	for id, expect := range descriptionTests {
-		get, err := NewDescription(id)
+		p, err := NewProblem(id)
 		if err != nil {
 			t.Fatal(err)
 		}
+		get := p.String()
 
 		if get != expect {
 			dmp := diffmatchpatch.New()
 			diffs := dmp.DiffMain(expect, get, true)
 			t.Error(dmp.DiffPrettyText(diffs))
 		}
-	}
-}
-
-func TestNewDescriptionFile(t *testing.T) {
-	err := NewDescriptionFile(1015, "test/main.go")
-	if err != nil {
-		t.Fatal(err)
 	}
 }
 
@@ -174,10 +168,11 @@ func TestDescriptions(t *testing.T) {
 
 				expect := strings.TrimSpace(strings.Split(string(content), "\npackage main")[0])
 
-				get, err := NewDescription(id)
+				p, err := NewProblem(id)
 				if err != nil {
 					t.Fatal(err)
 				}
+				get := p.String()
 
 				if expect != get {
 					dmp := diffmatchpatch.New()

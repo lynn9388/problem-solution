@@ -18,18 +18,15 @@ package urioj
 
 import (
 	"bytes"
-	"fmt"
 	"io"
-	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"path"
-	"path/filepath"
 	"strings"
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/dedis/student_18/dgcosi/code/onet/log"
 	"github.com/olekukonko/tablewriter"
 )
 
@@ -52,15 +49,8 @@ PROBLEM-OUTPUT
 PROBLEM-SAMPLE
 ` + strings.Repeat("*", lineWidth-1) + "/"
 
-var dir = "."
-
-// NewDescription render a problem to plain text comment.
-func NewDescription(id int) (string, error) {
-	p, err := NewProblem(id)
-	if err != nil {
-		return "", err
-	}
-
+// String renders a problem to plain text comment.
+func (p *Problem) String() string {
 	description := strings.Replace(description, "PROBLEM-NAME", alignCenter(p.Name), 1)
 	description = strings.Replace(description, "PROBLEM-URL", alignCenter(p.URL), 1)
 	description = strings.Replace(description, "PROBLEM-DESCRIPTION", processContent(p.Description), 1)
@@ -68,34 +58,25 @@ func NewDescription(id int) (string, error) {
 	description = strings.Replace(description, "PROBLEM-OUTPUT", processContent(p.Output), 1)
 	description = strings.Replace(description, "PROBLEM-SAMPLE", processContent(p.Sample), 1)
 
-	return description, nil
+	return description
 }
 
-// NewDescriptionFile creates a description file of a problem in a folder with
-// relative resources (like images). Default directory to save file will be
-// updated at the same time
-func NewDescriptionFile(id int, path string) error {
-	dir = filepath.Dir(path)
-	if _, err := os.Stat(dir); os.IsNotExist(err) {
-		if err := os.MkdirAll(dir, 0777); err != nil {
-			return err
+// DownloadContents downloads all contents relative to a problem.
+func (p *Problem) DownloadContents(dir string) {
+	f := func(cs []Content) {
+		for _, c := range cs {
+			switch c.(type) {
+			case FileContent:
+				url := c.(FileContent).URL
+				downloadFile(dir+"/"+path.Base(url), url)
+			}
 		}
 	}
 
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		description, err := NewDescription(id)
-		if err != nil {
-			return err
-		}
-
-		if err := ioutil.WriteFile(path, []byte(description), 0664); err != nil {
-			return err
-		}
-	} else {
-		return fmt.Errorf("file already exists: %v", path)
-	}
-
-	return nil
+	f(p.Description)
+	f(p.Input)
+	f(p.Output)
+	f(p.Sample)
 }
 
 // processContent processes content with correspond behavior (likes download image)
@@ -117,9 +98,6 @@ func processContent(cs []Content) string {
 				}
 			}
 			buf.WriteString("\n")
-		case FileContent:
-			url := c.(FileContent).URL
-			downloadFile(dir+"/"+path.Base(url), url)
 		case TableContent:
 			buf.WriteString(tableToText(c.(TableContent)) + "\n")
 		}
