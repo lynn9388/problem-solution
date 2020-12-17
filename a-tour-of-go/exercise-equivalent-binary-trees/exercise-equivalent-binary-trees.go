@@ -7,18 +7,19 @@ import (
 	"golang.org/x/tour/tree"
 )
 
-func walk(t *tree.Tree, ch chan int) {
-	if t != nil {
-		walk(t.Left, ch)
-		ch <- t.Value
-		walk(t.Right, ch)
-	}
-}
-
 // Walk walks the tree t sending all values
 // from the tree to the channel ch.
 func Walk(t *tree.Tree, ch chan int) {
-	walk(t, ch)
+	var walk func(*tree.Tree)
+	walk = func(t *tree.Tree) {
+		if t == nil {
+			return
+		}
+		walk(t.Left)
+		ch <- t.Value
+		walk(t.Right)
+	}
+	walk(t)
 	close(ch)
 }
 
@@ -48,6 +49,7 @@ func main() {
 	for v := range ch {
 		fmt.Println(v)
 	}
+
 	fmt.Println(Same(tree.New(1), tree.New(1)))
 	fmt.Println(Same(tree.New(1), tree.New(2)))
 }

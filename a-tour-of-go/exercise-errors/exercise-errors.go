@@ -3,7 +3,6 @@ package main
 
 import (
 	"fmt"
-	"math"
 )
 
 type ErrNegativeSqrt float64
@@ -14,16 +13,14 @@ func (e ErrNegativeSqrt) Error() string {
 
 func Sqrt(x float64) (float64, error) {
 	if x < 0 {
-		return float64(0), ErrNegativeSqrt(x)
-	} else {
-		z := 1.0
-		diff := math.Abs(z*z - x)
-		for diff > 1e-10 {
-			z -= (z*z - x) / (2 * z)
-			diff = math.Abs(z*z - x)
-		}
-		return z, nil
+		return 0, ErrNegativeSqrt(x)
 	}
+	z, diff := 1.0, 1.0
+	for diff < -1e-10 || 1e-10 < diff {
+		z -= (z*z - x) / (2 * z)
+		diff = x - z*z
+	}
+	return z, nil
 }
 
 func main() {
